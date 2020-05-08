@@ -18,45 +18,90 @@ bool WindowedMode()
 	return true;
 }
 
+#include <windowsx.h>
 // Detour variables
-unsigned long constexpr NativeResolution_RepositionBottomMenu_DetourSize = 26;
-unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpFrom = 0x004F8084;
-unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpBack = NativeResolution_RepositionBottomMenu_JmpFrom + NativeResolution_RepositionBottomMenu_DetourSize;
-__declspec(naked) void NativeResolution_RepositionBottomMenu()
+unsigned long constexpr PatchForHighDPI_RetrieveCursorFromWinMessage_DetourSize = 18;
+unsigned long constexpr PatchForHighDPI_RetrieveCursorFromWinMessage_JmpFrom = 0x006E62B9;
+unsigned long constexpr PatchForHighDPI_RetrieveCursorFromWinMessage_JmpBack = PatchForHighDPI_RetrieveCursorFromWinMessage_JmpFrom + PatchForHighDPI_RetrieveCursorFromWinMessage_DetourSize;
+// Function specific variables
+static unsigned long PatchForHighDPI_RetrieveCursorFromWinMessage_WinMessage = 0;
+static unsigned long PatchForHighDPI_RetrieveCursorFromWinMessage_XY = 0;
+static unsigned long PatchForHighDPI_RetrieveCursorFromWinMessage_X = 0;
+static unsigned long PatchForHighDPI_RetrieveCursorFromWinMessage_Y = 0;
+__declspec(naked) void PatchForHighDPI_RetrieveCursorFromWinMessage_Implementation()
 {
-	__asm mov ecx, 0x0A 
-	__asm mov dword ptr ds:[esi + 0x60], edx
-
-	__asm mov edx, dword ptr ds:[esi + 0x8C]; 
-	__asm cmp edx, 0xF0; // Only do this for 1280x1024 resolution modification
-	__asm jne ASM_NR_LOOP;
-	__asm add ecx, 0x01; // + 1 for Left TV panel repositioning (orig 0a)
-
-ASM_NR_LOOP:
-	__asm mov edx, dword ptr ds:[esi + 0x8C];
-	__asm cmp edx, 0xF0; // Only do this for 1280x1024 resolution modification
-	__asm jne ASM_NR_NOTNATIVERES;
-	__asm cmp ecx, 1 // Check if last (0x0B: Left TV panel) <-- Don't add default value if match
-	__asm jne ASM_NR_DONTOVERRIDEDEFAULT
-	__asm mov edx, 0x00
-
-ASM_NR_DONTOVERRIDEDEFAULT:
-	__asm add edx, 0x140; // Widescreen reposition value
-
-ASM_NR_NOTNATIVERES:
-	// Restore
-	__asm mov ebx, dword ptr ds:[eax];
-	__asm add ebx, edx;
-	__asm mov dword ptr ds:[eax], ebx;
-	__asm add eax, 4;
-	__asm dec ecx;
-	__asm jnz ASM_NR_LOOP;
-
-	__asm jmp NativeResolution_RepositionBottomMenu_JmpBack;
+	__asm lea eax, [ebp - 0x24];
+	__asm mov PatchForHighDPI_RetrieveCursorFromWinMessage_WinMessage, eax;
+	__asm push PM_REMOVE;
+	__asm push WM_NULL;
+	__asm push WM_NULL;
+	__asm push NULL;
+	__asm push PatchForHighDPI_RetrieveCursorFromWinMessage_WinMessage;
+	__asm call PeekMessageA;
+	__asm cmp eax, 0;
+	__asm je PFHD_RCFWM_RETURN;
+	__asm mov eax, PatchForHighDPI_RetrieveCursorFromWinMessage_WinMessage;
+	__asm cmp dword ptr ds:[eax + 0x04], WM_MOUSEMOVE;
+	__asm jne PFHD_RCFWM_RETURN;
+	__asm mov eax, dword ptr ds:[eax + 0x0C];
+	__asm mov PatchForHighDPI_RetrieveCursorFromWinMessage_XY, eax;
+	PatchForHighDPI_RetrieveCursorFromWinMessage_X = GET_X_LPARAM(PatchForHighDPI_RetrieveCursorFromWinMessage_XY);
+	PatchForHighDPI_RetrieveCursorFromWinMessage_Y = GET_Y_LPARAM(PatchForHighDPI_RetrieveCursorFromWinMessage_XY);
+	__asm mov eax, 1;
+PFHD_RCFWM_RETURN:
+	__asm jmp PatchForHighDPI_RetrieveCursorFromWinMessage_JmpBack;
 }
 
-// Overwriting 1280x1024
-bool NativeResolution()
+unsigned long constexpr PatchForHighDPI_IgnoreDInputMovement_DetourSize = 7;
+unsigned long constexpr PatchForHighDPI_IgnoreDInputMovement_JmpFrom = 0x0071C9C0;
+unsigned long constexpr PatchForHighDPI_IgnoreDInputMovement_JmpBack = PatchForHighDPI_IgnoreDInputMovement_JmpFrom + PatchForHighDPI_IgnoreDInputMovement_DetourSize;
+__declspec(naked) void PatchForHighDPI_IgnoreDInputMovement_Implementation()
+{
+	__asm mov edi, PatchForHighDPI_RetrieveCursorFromWinMessage_X;
+	__asm mov edx, PatchForHighDPI_RetrieveCursorFromWinMessage_Y;
+	__asm jmp PatchForHighDPI_IgnoreDInputMovement_JmpBack;
+}
+
+// Detour variables
+unsigned long constexpr PatchForHighDPI_OverrideWindowSize_DetourSize = 5;
+unsigned long constexpr PatchForHighDPI_OverrideWindowSize_JmpFrom = 0x006BAEEE;
+unsigned long constexpr PatchForHighDPI_OverrideWindowSize_JmpBack = PatchForHighDPI_OverrideWindowSize_JmpFrom + PatchForHighDPI_OverrideWindowSize_DetourSize;
+// Function specific variables
+static unsigned long PatchForHighDPI_OverrideWindowSize_Width = 0;
+static unsigned long PatchForHighDPI_OverrideWindowSize_Height = 0;
+__declspec(naked) void PatchForHighDPI_OverrideWindowSize_Implementation()
+{
+	__asm mov edx, dword ptr ss:[ebp + 0x10]; // Get width
+	__asm cmp edx, 0x500; // keep under 1280x* as is
+	__asm jge ASM_PFHD_OVERRIDE;
+	__asm cmp edx, 0x400;
+	__asm je ASM_PFHD_FIX1024;
+	__asm mov edx, dword ptr ss:[ebp + 0x14]; // Get height
+	__asm push edx;
+	__asm mov edx, dword ptr ss:[ebp + 0x10]; // Get width
+	__asm push edx;
+	__asm jmp PatchForHighDPI_OverrideWindowSize_JmpBack;
+
+ASM_PFHD_OVERRIDE:
+	__asm push PatchForHighDPI_OverrideWindowSize_Height;
+	__asm push PatchForHighDPI_OverrideWindowSize_Width;
+	__asm jmp PatchForHighDPI_OverrideWindowSize_JmpBack;
+
+ASM_PFHD_FIX1024:
+	__asm pushad;
+	{
+		MessageBox(NULL, L"1024x768 is broken. Please reset your resolution through STConfig.exe!", L"High DPI", MB_ICONERROR);
+		ExitProcess(-1);
+	}
+	__asm popad;
+	__asm mov edx, dword ptr ss:[ebp + 0x14] ; // Get height
+	__asm push edx;
+	__asm mov edx, dword ptr ss:[ebp + 0x10] ; // Get width
+	__asm push edx;
+	__asm jmp PatchForHighDPI_OverrideWindowSize_JmpBack;
+}
+
+bool PatchForHighDPI(int screenWidth, int screenHeight)
 {
 	DEVMODE deviceMode;
 	ZeroMemory(&deviceMode, sizeof(deviceMode));
@@ -64,11 +109,85 @@ bool NativeResolution()
 	if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &deviceMode))
 		return false;
 
-	int screenWidth = deviceMode.dmPelsWidth;
-	int screenHeight = deviceMode.dmPelsHeight;
+	if (screenHeight == deviceMode.dmPelsHeight && screenWidth == deviceMode.dmPelsWidth)
+		return true;
+
+#ifdef _DEBUG
+	MessageBox(NULL, L"Rescaling", L"High DPI", MB_ICONINFORMATION);
+#endif
+
+	PatchForHighDPI_OverrideWindowSize_Width = deviceMode.dmPelsWidth;
+	PatchForHighDPI_OverrideWindowSize_Height = deviceMode.dmPelsHeight;
+
+	if (!Detour::Create(PatchForHighDPI_RetrieveCursorFromWinMessage_JmpFrom, PatchForHighDPI_RetrieveCursorFromWinMessage_DetourSize, (unsigned long)PatchForHighDPI_RetrieveCursorFromWinMessage_Implementation))
+		return false;
+
+	if (!Detour::Create(PatchForHighDPI_IgnoreDInputMovement_JmpFrom, PatchForHighDPI_IgnoreDInputMovement_DetourSize, (unsigned long)PatchForHighDPI_IgnoreDInputMovement_Implementation))
+		return false;
+
+	if (!Detour::Create(PatchForHighDPI_OverrideWindowSize_JmpFrom, PatchForHighDPI_OverrideWindowSize_DetourSize, (unsigned long)PatchForHighDPI_OverrideWindowSize_Implementation))
+		return false;
+
+	// Nasty disable valid resolution check
+	const SIZE_T nopArrayLength = 45;
+	unsigned char* nopArray = new unsigned char[nopArrayLength];
+	memset(nopArray, 0x90, nopArrayLength);
+	MemoryWriter::Write(0x0056F088, nopArray, nopArrayLength);
+	delete[] nopArray;
+
+	return true;
+}
+
+// Detour variables
+unsigned long constexpr NativeResolution_RepositionBottomMenu_DetourSize = 26;
+unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpFrom = 0x004F8084;
+unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpBack = NativeResolution_RepositionBottomMenu_JmpFrom + NativeResolution_RepositionBottomMenu_DetourSize;
+// Function specific variables
+static unsigned long NativeResolution_RepositionBottomMenu_MarginLeft = 0;
+__declspec(naked) void NativeResolution_RepositionBottomMenu()
+{
+	__asm mov ecx, 0x0A 
+	__asm mov dword ptr ds:[esi + 0x60], edx
+
+	__asm mov edx, dword ptr ds:[esi + 0x8C]; 
+	__asm cmp edx, 0xF0;
+	__asm jne ASM_NR_RBM_LOOP;
+	__asm add ecx, 0x01; // + 1 for Left TV panel repositioning (orig 0a)
+
+ASM_NR_RBM_LOOP:
+	__asm mov edx, dword ptr ds:[esi + 0x8C];
+	__asm cmp edx, 0xF0; // Only do this for 1280x1024 resolution modification
+	__asm jne ASM_NR_RBM_NOTNATIVERES;
+	__asm cmp ecx, 1 // Check if last (0x0B: Left TV panel) <-- Don't add default value if match
+	__asm jne ASM_NR_RBM_DONTOVERRIDEDEFAULT
+	__asm mov edx, 0x00
+
+ASM_NR_RBM_DONTOVERRIDEDEFAULT:
+	__asm add edx, NativeResolution_RepositionBottomMenu_MarginLeft; // Widescreen reposition value
+
+ASM_NR_RBM_NOTNATIVERES:
+	// Restore
+	__asm mov ebx, dword ptr ds:[eax];
+	__asm add ebx, edx;
+	__asm mov dword ptr ds:[eax], ebx;
+	__asm add eax, 4;
+	__asm dec ecx;
+	__asm jnz ASM_NR_RBM_LOOP;
+
+	__asm jmp NativeResolution_RepositionBottomMenu_JmpBack;
+}
+
+// Overwriting 1280x1024
+bool NativeResolution()
+{
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	if (screenWidth < 1280 || (screenWidth == 1280 && screenHeight == 1024)) // Don't patch
 		return true;
+
+	if (!PatchForHighDPI(screenWidth, screenHeight))
+		return false;
 
 	if (screenWidth == 1366 && screenHeight == 768)
 	{
@@ -144,6 +263,8 @@ bool NativeResolution()
 	memcpy(buffer, &screenHeight, sizeof(int));
 	if (!MemoryWriter::Write(0x00571D5C, buffer, sizeof(int)))
 		return false;
+
+	NativeResolution_RepositionBottomMenu_MarginLeft = (screenWidth - 1280) / 2;
 
 	if (!Detour::Create(NativeResolution_RepositionBottomMenu_JmpFrom, NativeResolution_RepositionBottomMenu_DetourSize, (unsigned long)NativeResolution_RepositionBottomMenu))
 		return false;
