@@ -17,13 +17,13 @@ bool IsApplicationSubTitans()
 {
 	WCHAR applicationPath[MAX_PATH];
 	GetModuleFileName(NULL, applicationPath, MAX_PATH);
-	
+
 	unsigned long headerSum;
 	unsigned long calcSum;
-	
-	if(MapFileAndCheckSumW(applicationPath, &headerSum, &calcSum) != 0)
-		return false;	
-	
+
+	if (MapFileAndCheckSumW(applicationPath, &headerSum, &calcSum) != 0)
+		return false;
+
 	return calcSum == 0x004337AC;
 }
 

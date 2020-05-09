@@ -144,7 +144,7 @@ unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpFrom = 0x004F80
 unsigned long constexpr NativeResolution_RepositionBottomMenu_JmpBack = NativeResolution_RepositionBottomMenu_JmpFrom + NativeResolution_RepositionBottomMenu_DetourSize;
 // Function specific variables
 static unsigned long NativeResolution_RepositionBottomMenu_MarginLeft = 0;
-__declspec(naked) void NativeResolution_RepositionBottomMenu()
+__declspec(naked) void NativeResolution_RepositionBottomMenu_Implementation()
 {
 	__asm mov ecx, 0x0A 
 	__asm mov dword ptr ds:[esi + 0x60], edx
@@ -175,6 +175,29 @@ ASM_NR_RBM_NOTNATIVERES:
 	__asm jnz ASM_NR_RBM_LOOP;
 
 	__asm jmp NativeResolution_RepositionBottomMenu_JmpBack;
+}
+
+// Detour variables
+unsigned long constexpr NativeResolution_RenameSetting_DetourSize = 6;
+unsigned long constexpr NativeResolution_RenameSetting_JmpFrom = 0x005309D0;
+unsigned long constexpr NativeResolution_RenameSetting_JmpBack = NativeResolution_RenameSetting_JmpFrom + NativeResolution_RenameSetting_DetourSize;
+// Function specific variables
+static char* NativeResolution_RenameSetting_CurrentStringPtr = 0;
+static char NativeResolution_RenameSetting_TargetString[] = { '1', '2', '8', '0', 'x', '1', '0', '2', '4', 0x00 };
+static char NativeResolution_RenameSetting_NewString[] = { 'N', 'a', 't', 'i', 'v', 'e', ' ', 'R', 'e', 's', 'o', 'l', 'u', 't', 'i', 'o', 'n', 0x00 };
+__declspec(naked) void NativeResolution_RenameSetting_Implementation()
+{
+	__asm mov NativeResolution_RenameSetting_CurrentStringPtr, eax;
+
+	__asm pushad;
+		if (strcmp(NativeResolution_RenameSetting_TargetString, NativeResolution_RenameSetting_CurrentStringPtr) == 0)
+			NativeResolution_RenameSetting_CurrentStringPtr = NativeResolution_RenameSetting_NewString;
+	__asm popad;
+
+	__asm push NativeResolution_RenameSetting_CurrentStringPtr;
+	__asm mov eax, 0x00712E20;
+	__asm call eax;
+	__asm jmp NativeResolution_RenameSetting_JmpBack;
 }
 
 // Overwriting 1280x1024
@@ -266,7 +289,10 @@ bool NativeResolution()
 
 	NativeResolution_RepositionBottomMenu_MarginLeft = (screenWidth - 1280) / 2;
 
-	if (!Detour::Create(NativeResolution_RepositionBottomMenu_JmpFrom, NativeResolution_RepositionBottomMenu_DetourSize, (unsigned long)NativeResolution_RepositionBottomMenu))
+	if (!Detour::Create(NativeResolution_RepositionBottomMenu_JmpFrom, NativeResolution_RepositionBottomMenu_DetourSize, (unsigned long)NativeResolution_RepositionBottomMenu_Implementation))
+		return false;
+
+	if (!Detour::Create(NativeResolution_RenameSetting_JmpFrom, NativeResolution_RenameSetting_DetourSize, (unsigned long)NativeResolution_RenameSetting_Implementation))
 		return false;
 
 	return true;

@@ -9,26 +9,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "subtitans", "subtitans\subt
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Debug|x64.ActiveCfg = Debug|x64
-		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Debug|x64.Build.0 = Debug|x64
 		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Debug|x86.ActiveCfg = Debug|Win32
 		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Debug|x86.Build.0 = Debug|Win32
-		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Release|x64.ActiveCfg = Release|x64
-		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Release|x64.Build.0 = Release|x64
 		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Release|x86.ActiveCfg = Release|Win32
 		{229FEA89-DB14-4AD2-BD12-878FE36496F0}.Release|x86.Build.0 = Release|Win32
-		{033CA3B5-4016-489A-943E-663953F6F89A}.Debug|x64.ActiveCfg = Debug|x64
-		{033CA3B5-4016-489A-943E-663953F6F89A}.Debug|x64.Build.0 = Debug|x64
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Debug|x86.ActiveCfg = Debug|Win32
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Debug|x86.Build.0 = Debug|Win32
-		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x64.ActiveCfg = Release|x64
-		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x64.Build.0 = Release|x64
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x86.ActiveCfg = Release|Win32
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
