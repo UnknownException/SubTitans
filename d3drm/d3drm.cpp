@@ -1,5 +1,7 @@
 #include <Windows.h>
 #include <math.h>
+#include <ImageHlp.h>
+#pragma comment(lib, "ImageHlp.Lib")
 #include "types.h"
 
 #pragma comment(linker, "/EXPORT:D3DRMVectorModulus=_D3DRMVectorModulus@4")
@@ -15,7 +17,14 @@ bool IsApplicationSubTitans()
 {
 	WCHAR applicationPath[MAX_PATH];
 	GetModuleFileName(NULL, applicationPath, MAX_PATH);
-	return wcsstr(applicationPath, L"ST.exe") != nullptr;
+	
+	unsigned long headerSum;
+	unsigned long calcSum;
+	
+	if(MapFileAndCheckSumW(applicationPath, &headerSum, &calcSum) != 0)
+		return false;	
+	
+	return calcSum == 0x004337AC;
 }
 
 //https://docs.microsoft.com/en-us/windows/win32/dlls/dllmain
