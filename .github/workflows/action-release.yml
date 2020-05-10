@@ -2,13 +2,15 @@ name: SubTitans Release
 on:
   push:
     branches: [ master ]
-    tags:
-      - 'v*'
 jobs:
   build:
     name: Build SubTitans
     runs-on: windows-2019
     steps:
+      - name: Create Timestamp
+        id: create_timestamp
+        run: $buildTime = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"; Write-Host "::set-output name=release_datestamp::$buildTime"
+        
 #https://github.com/marketplace/actions/checkout
       - name: Check out
         uses: actions/checkout@v2
@@ -24,8 +26,10 @@ jobs:
       - name: Create Zip
         shell: powershell
         run: |
+          Rename-Item -Path README.md -NewName readme.txt
+          Rename-Item -Path LICENSE -NewName license.txt
           $compress = @{
-            Path = "Release/*.dll", "README.md", "LICENSE"
+            Path = "Release/*.dll", "readme.txt", "license.txt"
             DestinationPath = "SubTitans.zip"
             Force = $True
           }
@@ -38,8 +42,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ steps.create_timestamp.outputs.release_datestamp }}
+          release_name: Release ${{ steps.create_timestamp.outputs.release_datestamp }}
           body: |
             Test Release
             See README.MD
@@ -55,5 +59,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./SubTitans.zip
-          asset_name: SubTitans.zip
+          asset_name: SubTitans-${{ steps.create_timestamp.outputs.release_datestamp }}.zip
           asset_content_type: application/zip
