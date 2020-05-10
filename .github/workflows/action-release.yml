@@ -25,7 +25,7 @@ jobs:
         shell: powershell
         run: |
           $compress = @{
-            Path = "*.dll", "README.md", "LICENSE"
+            Path = "Release/*.dll", "README.md", "LICENSE"
             DestinationPath = "SubTitans.zip"
             Force = $True
           }
