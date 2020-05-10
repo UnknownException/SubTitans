@@ -27,7 +27,7 @@ jobs:
           $compress = @{
             Path = "*.dll", "README.md", "LICENSE"
             DestinationPath = "SubTitans.zip"
-            Force = true
+            Force = $True
           }
           Compress-Archive @compress
 
