@@ -77,6 +77,8 @@ BOOLEAN __stdcall DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved)
 
 		}	break;
 		case DLL_PROCESS_DETACH:
+			Patches::Release();
+			break;
 		default:
 			break;
 	}

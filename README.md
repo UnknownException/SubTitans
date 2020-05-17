@@ -10,6 +10,7 @@ Unofficial Submarine Titans patch
 * Support for high DPI
 * Fixes alt-tab crashes
 * Fixes various internal errors
+* Performance boost
 
 **Instructions**
 1. Copy & paste d3drm.dll and subtitans.dll in your Submarine Titans folder.
@@ -20,7 +21,7 @@ Unofficial Submarine Titans patch
 **Unfinished**
 * Main menu is rendering in 800x600
 * FPS is locked at 25
-* GUI positioning
 
 **Known bugs**
 * 1366*768 does not work correctly
+* The GUI may look weird at the bottom right corner for some factions

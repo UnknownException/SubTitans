@@ -184,7 +184,7 @@ unsigned long constexpr NativeResolution_RenameSetting_JmpBack = NativeResolutio
 // Function specific variables
 static char* NativeResolution_RenameSetting_CurrentStringPtr = 0;
 static char NativeResolution_RenameSetting_TargetString[] = { '1', '2', '8', '0', 'x', '1', '0', '2', '4', 0x00 };
-static char NativeResolution_RenameSetting_NewString[] = { 'N', 'a', 't', 'i', 'v', 'e', ' ', 'R', 'e', 's', 'o', 'l', 'u', 't', 'i', 'o', 'n', 0x00 };
+static char NativeResolution_RenameSetting_NewString[] = { 'N', 'A', 'T', 'I', 'V', 'E', ' ', 'R', 'E', 'S', 'O', 'L', 'U', 'T', 'I', 'O', 'N', 0x00 };
 __declspec(naked) void NativeResolution_RenameSetting_Implementation()
 {
 	__asm mov NativeResolution_RenameSetting_CurrentStringPtr, eax;
@@ -200,13 +200,223 @@ __declspec(naked) void NativeResolution_RenameSetting_Implementation()
 	__asm jmp NativeResolution_RenameSetting_JmpBack;
 }
 
-// Overwriting 1280x1024
+// Detour variables
+unsigned long constexpr NativeResolution_RedesignFrame_DetourSize = 18;
+unsigned long constexpr NativeResolution_RedesignFrame_JmpFrom = 0x00544872;
+unsigned long constexpr NativeResolution_RedesignFrame_JmpBack = NativeResolution_RedesignFrame_JmpFrom + NativeResolution_RedesignFrame_DetourSize;
+// Function specific variables
+static unsigned char* NativeResolution_RedesignFrame_ImagePtr;
+static unsigned char NativeResolution_RedesignFrame_LastTeamId = 0; // Required for check if frame has to be remade
+const int NativeResolution_RedesignFrame_HeaderAndColorTableSize = 40 /* 0x28 */ + 1024;
+static unsigned char* NativeResolution_RedesignFrame_FrameBuffer = nullptr;
+static int NativeResolution_RedesignFrame_Width;
+static int NativeResolution_RedesignFrame_Height;
+
+void NativeResolution_RedesignFrame_FillRect(unsigned int sourceX, unsigned int sourceY, unsigned int targetX, unsigned int targetY, unsigned int width, unsigned int height)
+{
+	int sourceWidth = 0;
+	memcpy(&sourceWidth, NativeResolution_RedesignFrame_ImagePtr + 0x04, sizeof(int)); // Always 1280
+
+	int sourceHeight = 0;
+	memcpy(&sourceHeight, NativeResolution_RedesignFrame_ImagePtr + 0x08, sizeof(int)); // Always 1024
+
+	int targetWidth = 0;
+	memcpy(&targetWidth, NativeResolution_RedesignFrame_FrameBuffer + 0x04, sizeof(int));
+
+	int targetHeight = 0;
+	memcpy(&targetHeight, NativeResolution_RedesignFrame_FrameBuffer + 0x08, sizeof(int));
+
+	// Lower height is ok (720 is lowest)
+	if (sourceWidth != 1280 || sourceHeight != 1024 || targetWidth < sourceWidth)
+		return;
+
+	sourceY = sourceHeight - height - sourceY;
+	targetY = targetHeight - height - targetY;
+
+	unsigned long sourceBoundary = (unsigned long)NativeResolution_RedesignFrame_ImagePtr + NativeResolution_RedesignFrame_HeaderAndColorTableSize + sourceWidth * sourceHeight;
+	unsigned long targetBoundary = (unsigned long)NativeResolution_RedesignFrame_FrameBuffer + NativeResolution_RedesignFrame_HeaderAndColorTableSize + targetWidth * targetHeight;
+
+	for (unsigned int line = 0; line < height; ++line)
+	{
+		bool outOfBounds = false;
+
+		unsigned char* sourcePtr = NativeResolution_RedesignFrame_ImagePtr + NativeResolution_RedesignFrame_HeaderAndColorTableSize; // Set pointer past color table
+		sourcePtr += (line + sourceY) * sourceWidth + sourceX;
+
+		unsigned long sourceReadEndPosition = (unsigned long)sourcePtr + width;
+		if (sourceReadEndPosition > sourceBoundary)
+			outOfBounds = true;
+
+		unsigned char* targetPtr = NativeResolution_RedesignFrame_FrameBuffer + NativeResolution_RedesignFrame_HeaderAndColorTableSize; // Set pointer past color table
+		targetPtr += (line + targetY) * targetWidth + targetX;
+
+		unsigned long targetReadEndPosition = (unsigned long)targetPtr + width;
+		if (targetReadEndPosition > targetBoundary)
+			outOfBounds = true;
+
+		if (!outOfBounds)
+			memcpy(targetPtr, sourcePtr, width);
+	}
+}
+
+void NativeResolution_RedesignFrame_Render()
+{
+	int imageSize = NativeResolution_RedesignFrame_Width * NativeResolution_RedesignFrame_Height;
+	memset(NativeResolution_RedesignFrame_FrameBuffer, 0x00, NativeResolution_RedesignFrame_HeaderAndColorTableSize + imageSize);
+
+	memcpy(NativeResolution_RedesignFrame_FrameBuffer, NativeResolution_RedesignFrame_ImagePtr, NativeResolution_RedesignFrame_HeaderAndColorTableSize);
+	memcpy(NativeResolution_RedesignFrame_FrameBuffer + 0x04, &NativeResolution_RedesignFrame_Width, sizeof(int));
+	memcpy(NativeResolution_RedesignFrame_FrameBuffer + 0x08, &NativeResolution_RedesignFrame_Height, sizeof(int));
+	memcpy(NativeResolution_RedesignFrame_FrameBuffer + 0x14, &imageSize, sizeof(int));
+
+	// Top bar
+	const int topLeftWidth = 410;
+	const int topMidWidth = 498;
+	const int topRightWidth = 372;
+	const int topHeight = 30;
+
+	NativeResolution_RedesignFrame_FillRect(0, 0, 0, 0, topLeftWidth, topHeight); // Left
+	const int topMidRequiredWidth = NativeResolution_RedesignFrame_Width - topRightWidth - topLeftWidth;
+	for (int i = 0; i < topMidRequiredWidth;)
+	{
+		int drawWidth = topMidWidth;
+		if (i + drawWidth > topMidRequiredWidth)
+			drawWidth -= i + drawWidth - topMidRequiredWidth;
+
+		NativeResolution_RedesignFrame_FillRect(topLeftWidth, 0, topLeftWidth + i, 0, drawWidth, topHeight); // Middle
+
+		i += drawWidth;
+	}
+	NativeResolution_RedesignFrame_FillRect(1280 - topRightWidth, 0, NativeResolution_RedesignFrame_Width - topRightWidth, 0, topRightWidth, topHeight); // Right
+	
+	// Left bar
+	const int leftWidth = 12;
+	const int leftHeight = 772; // Not precise, doesn't matter; looks good
+	const int leftBottomHeight = 42;
+
+	const int leftRequiredHeight = NativeResolution_RedesignFrame_Height - topHeight - leftBottomHeight;
+	for (int i = 0; i < leftRequiredHeight;)
+	{
+		int drawHeight = leftHeight;
+		if (i + drawHeight > leftRequiredHeight)
+			drawHeight -= i + drawHeight - leftRequiredHeight;
+
+		NativeResolution_RedesignFrame_FillRect(0, topHeight, 0, topHeight + i, leftWidth, drawHeight); // Top
+
+		i += drawHeight;
+	}
+	NativeResolution_RedesignFrame_FillRect(0, 1024 - leftBottomHeight, 0, NativeResolution_RedesignFrame_Height - leftBottomHeight, leftWidth, leftBottomHeight); // Bottom
+
+	// Bottom bar
+	const int bottomHeight = 32;
+	const int bottomMidWidth = 692;
+	const int bottomRightWidth = 133;
+
+	const int bottomRequiredWidth = NativeResolution_RedesignFrame_Width - leftWidth - bottomRightWidth;
+	for (int i = 0; i < bottomRequiredWidth;)
+	{
+		int drawWidth = bottomMidWidth;
+		if (i + drawWidth > bottomRequiredWidth)
+			drawWidth -= i + drawWidth - bottomRequiredWidth;
+
+		NativeResolution_RedesignFrame_FillRect(306, 1024 - bottomHeight, leftWidth + i, NativeResolution_RedesignFrame_Height - bottomHeight, drawWidth, bottomHeight); // Left
+
+		i += drawWidth;
+	}
+	NativeResolution_RedesignFrame_FillRect(1280 - bottomRightWidth, 1024 - bottomHeight, NativeResolution_RedesignFrame_Width - bottomRightWidth, NativeResolution_RedesignFrame_Height - bottomHeight, bottomRightWidth, bottomHeight); // Right
+
+	// Right bar
+	const int rightWidth = 28;
+	const int rightTopHeight = 294;
+	const int rightMidHeight = 530;
+	const int rightBottomHeight = 138;
+
+	NativeResolution_RedesignFrame_FillRect(1280 - rightWidth, topHeight, NativeResolution_RedesignFrame_Width - rightWidth, topHeight, rightWidth, rightTopHeight); // Top
+	const int rightMidRequiredHeight = NativeResolution_RedesignFrame_Height - rightTopHeight - rightBottomHeight - topHeight - bottomHeight;
+	for (int i = 0; i < rightMidRequiredHeight;)
+	{
+		int drawHeight = rightMidHeight;
+		if (i + drawHeight > rightMidRequiredHeight)
+			drawHeight -= i + drawHeight - rightMidRequiredHeight;
+
+		NativeResolution_RedesignFrame_FillRect(1280 - rightWidth, topHeight + rightTopHeight, NativeResolution_RedesignFrame_Width - rightWidth, topHeight + rightTopHeight + i, rightWidth, drawHeight); // Mid
+
+		i += drawHeight;
+	}
+	NativeResolution_RedesignFrame_FillRect(1280 - rightWidth, 1024-bottomHeight-rightBottomHeight, NativeResolution_RedesignFrame_Width - rightWidth, NativeResolution_RedesignFrame_Height - bottomHeight - rightBottomHeight, rightWidth, rightBottomHeight); // Bottom
+
+}
+
+__declspec(naked) void NativeResolution_RedesignFrame_Implementation()
+{
+	__asm mov dword ptr ss:[ebp - 0x08], eax;
+
+	// Check image properties
+	__asm cmp dword ptr ds:[eax], 0x28; // Header size (bmp (v4))
+	__asm jne ASM_NR_RF_DEFAULT;
+	__asm cmp dword ptr ds:[eax + 0x04], 0x500; // Width
+	__asm jne ASM_NR_RF_DEFAULT;
+	__asm cmp dword ptr ds:[eax + 0x08], 0x400; // Height
+	__asm jne ASM_NR_RF_DEFAULT;
+	__asm cmp word ptr ds:[eax + 0x0C], 0x01; // Layers
+	__asm jne ASM_NR_RF_DEFAULT;
+	__asm cmp word ptr ds:[eax + 0x0E], 0x08; // Bits
+	__asm jne ASM_NR_RF_DEFAULT;
+	__asm cmp dword ptr ds:[eax + 0x20], 0x100 // Color Table items 
+	__asm jne ASM_NR_RF_DEFAULT;
+
+	// Get original image
+	__asm mov NativeResolution_RedesignFrame_ImagePtr, eax; 
+
+	// Uninitialized teamid?
+	__asm cmp byte ptr ds:[0x0080911E], 0x00; 
+	__asm je ASM_NR_RF_DEFAULT;
+
+	// Check if teams have changes
+	__asm xor eax, eax;
+	__asm mov al, NativeResolution_RedesignFrame_LastTeamId;
+	__asm cmp byte ptr ds:[0x0080911E], al;
+	__asm je ASM_NR_RF_RENDERREDESIGN;
+
+	// Store team id
+	__asm mov al, byte ptr ds:[0x0080911E];
+	__asm mov NativeResolution_RedesignFrame_LastTeamId, al;
+
+	// Create new frame
+	__asm pushad;
+		NativeResolution_RedesignFrame_Render();
+	__asm popad;
+
+ASM_NR_RF_RENDERREDESIGN:
+	__asm push NativeResolution_RedesignFrame_FrameBuffer;
+	__asm push 1;
+	__asm push 0;
+	__asm push 0;
+	__asm mov eax, 0x0040372E;
+	__asm call eax;
+	__asm add esp, 0x10;
+
+	__asm jmp NativeResolution_RedesignFrame_JmpBack;
+
+ASM_NR_RF_DEFAULT:
+	__asm push eax;
+	__asm push 1;
+	__asm push 0;
+	__asm push 0
+	__asm mov eax, 0x0040372E;
+	__asm call eax;
+	__asm add esp, 0x10;
+
+	__asm jmp NativeResolution_RedesignFrame_JmpBack;
+}
+
+// Overwrites 1280x1024
 bool NativeResolution()
 {
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-	if (screenWidth < 1280 || (screenWidth == 1280 && screenHeight == 1024)) // Don't patch
+	if (screenWidth < 1280 || screenHeight < 720) // Don't patch; user should use 800x600/1024x768
 		return true;
 
 	if (!PatchForHighDPI(screenWidth, screenHeight))
@@ -289,10 +499,17 @@ bool NativeResolution()
 
 	NativeResolution_RepositionBottomMenu_MarginLeft = (screenWidth - 1280) / 2;
 
+	NativeResolution_RedesignFrame_Width = screenWidth;
+	NativeResolution_RedesignFrame_Height = screenHeight;
+	NativeResolution_RedesignFrame_FrameBuffer = new unsigned char[NativeResolution_RedesignFrame_HeaderAndColorTableSize + screenWidth * screenHeight];
+
 	if (!Detour::Create(NativeResolution_RepositionBottomMenu_JmpFrom, NativeResolution_RepositionBottomMenu_DetourSize, (unsigned long)NativeResolution_RepositionBottomMenu_Implementation))
 		return false;
 
 	if (!Detour::Create(NativeResolution_RenameSetting_JmpFrom, NativeResolution_RenameSetting_DetourSize, (unsigned long)NativeResolution_RenameSetting_Implementation))
+		return false;
+
+	if (!Detour::Create(NativeResolution_RedesignFrame_JmpFrom, NativeResolution_RedesignFrame_DetourSize, (unsigned long)NativeResolution_RedesignFrame_Implementation))
 		return false;
 
 	return true;
@@ -348,6 +565,17 @@ bool SleepWell()
 	return true;
 }
 
+// This old optimization tanks the FPS
+// Disabling it by overwriting the limit (100) with -1 (Jump Greater will ALWAYS execute)
+bool DisableDrawStacking()
+{
+	unsigned char minusOne[] = { 0xFF };
+	if (!MemoryWriter::Write(0x006B7293, minusOne, 1))
+		return false;
+
+	return true;
+}
+
 bool Patches::Apply()
 {
 	if (!WindowedMode())
@@ -356,14 +584,11 @@ bool Patches::Apply()
 		return false;
 	}
 
-//#ifdef _DEBUG
-	// TODO Lots
 	if (!NativeResolution())
 	{
 		MessageBox(NULL, L"Failed to apply Native Resolution patch", L"Patching error", MB_ICONERROR);
 		return false;
 	}
-//#endif
 
 //#ifdef _DEBUG
 	// TODO Menu effects (Sleep based timing?) & Decoupling logics/rendering
@@ -374,5 +599,17 @@ bool Patches::Apply()
 	}
 //#endif
 
+	if (!DisableDrawStacking())
+	{
+		MessageBox(NULL, L"Failed to apply Disable Draw Stacking patch", L"Patching error", MB_ICONERROR);
+		return false;
+	}
+
 	return true;
+}
+
+void Patches::Release()
+{
+	if (NativeResolution_RedesignFrame_FrameBuffer != nullptr)
+		delete[] NativeResolution_RedesignFrame_FrameBuffer;
 }
