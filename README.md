@@ -2,11 +2,11 @@
 Unofficial Submarine Titans patch
 
 **Requirements**
-* Windows 10 (Older versions are untested)
+* Windows 10 (Windows 7 seems to work but isn't actively tested)
 * Steam version of Submarine Titans (GOG/Original are untested)
 
 **Features**
-* Support for native resolution (tested up to 1440p)
+* Support for native resolution (tested up to 3840x2160)
 * Support for high DPI
 * Fixes alt-tab crashes
 * Fixes various internal errors
@@ -25,3 +25,6 @@ Unofficial Submarine Titans patch
 **Known bugs**
 * 1366*768 does not work correctly
 * The GUI may look weird at the bottom right corner for some factions
+
+**Other**
+Seems to fix/reduce the color bug. If you're still experiencing the color bug then please let me know.

@@ -89,10 +89,12 @@ ASM_PFHD_OVERRIDE:
 
 ASM_PFHD_FIX1024:
 	__asm pushad;
+	__asm pushfd;
 	{
 		MessageBox(NULL, L"1024x768 is broken. Please reset your resolution through STConfig.exe!", L"High DPI", MB_ICONERROR);
 		ExitProcess(-1);
 	}
+	__asm popfd;
 	__asm popad;
 	__asm mov edx, dword ptr ss:[ebp + 0x14] ; // Get height
 	__asm push edx;
@@ -190,8 +192,10 @@ __declspec(naked) void NativeResolution_RenameSetting_Implementation()
 	__asm mov NativeResolution_RenameSetting_CurrentStringPtr, eax;
 
 	__asm pushad;
+	__asm pushfd;
 		if (strcmp(NativeResolution_RenameSetting_TargetString, NativeResolution_RenameSetting_CurrentStringPtr) == 0)
 			NativeResolution_RenameSetting_CurrentStringPtr = NativeResolution_RenameSetting_NewString;
+	__asm popfd;
 	__asm popad;
 
 	__asm push NativeResolution_RenameSetting_CurrentStringPtr;
@@ -209,8 +213,8 @@ static unsigned char* NativeResolution_RedesignFrame_ImagePtr;
 static unsigned char NativeResolution_RedesignFrame_LastTeamId = 0; // Required for check if frame has to be remade
 const int NativeResolution_RedesignFrame_HeaderAndColorTableSize = 40 /* 0x28 */ + 1024;
 static unsigned char* NativeResolution_RedesignFrame_FrameBuffer = nullptr;
-static int NativeResolution_RedesignFrame_Width;
-static int NativeResolution_RedesignFrame_Height;
+static int NativeResolution_RedesignFrame_Width = 0;
+static int NativeResolution_RedesignFrame_Height = 0;
 
 void NativeResolution_RedesignFrame_FillRect(unsigned int sourceX, unsigned int sourceY, unsigned int targetX, unsigned int targetY, unsigned int width, unsigned int height)
 {
@@ -384,7 +388,9 @@ __declspec(naked) void NativeResolution_RedesignFrame_Implementation()
 
 	// Create new frame
 	__asm pushad;
+	__asm pushfd;
 		NativeResolution_RedesignFrame_Render();
+	__asm popfd;
 	__asm popad;
 
 ASM_NR_RF_RENDERREDESIGN:
@@ -531,6 +537,7 @@ unsigned long constexpr SleepWell_Implementation_FrameLimit = 1000 / 25; // TODO
 __declspec(naked) void SleepWell_Implementation()
 {
 	__asm pushad;
+	__asm pushfd;
 
 	SleepWell_Implementation_CurrentTime = timeGetTime();
 	SleepWell_Implementation_Difference = SleepWell_Implementation_CurrentTime - SleepWell_Implementation_PreviousTime;
@@ -553,6 +560,7 @@ __declspec(naked) void SleepWell_Implementation()
 	// Try to prevent negative effect of sleep inaccuracy
 	SleepWell_Implementation_PreviousTime += SleepWell_Implementation_FrameLimit;
 
+	__asm popfd;
 	__asm popad;
 	__asm jmp SleepWell_Implementation_JmpBack;
 }
@@ -590,14 +598,12 @@ bool Patches::Apply()
 		return false;
 	}
 
-//#ifdef _DEBUG
 	// TODO Menu effects (Sleep based timing?) & Decoupling logics/rendering
 	if (!SleepWell())
 	{
 		MessageBox(NULL, L"Failed to apply Sleep Well patch", L"Patching error", MB_ICONERROR);
 		return false;
 	}
-//#endif
 
 	if (!DisableDrawStacking())
 	{
@@ -612,4 +618,8 @@ void Patches::Release()
 {
 	if (NativeResolution_RedesignFrame_FrameBuffer != nullptr)
 		delete[] NativeResolution_RedesignFrame_FrameBuffer;
+
+#ifdef _DEBUG
+	MessageBox(NULL, L"Unloading SubTitans.dll", L"Informational", MB_ICONINFORMATION);
+#endif
 }

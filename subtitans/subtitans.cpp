@@ -56,32 +56,30 @@ bool RemoveBadFile(std::wstring file)
 	return true;
 }
 
-BOOLEAN __stdcall DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved)
+#pragma comment(linker, "/EXPORT:InitializeLibrary=_InitializeLibrary@0")
+extern "C" void __stdcall InitializeLibrary()
 {
-	switch (reason)
+	bool dplayRemoved = RemoveBadFile(L"dplay.dll"); // Fix: Internal error @ Startup
+	bool dplayxRemoved = RemoveBadFile(L"dplayx.dll"); // Fix: Internal error @ Startup
+	bool steamScriptRemoved = RemoveBadFile(L"steam_installscript.vdf"); // Fix: Force resetting compatibility by Steam
+	bool compatDisabled = DisableCompatibilityMode(); // Fix: Internal error @ Startup
+	if (dplayRemoved || dplayxRemoved || steamScriptRemoved || compatDisabled)
 	{
-		case DLL_PROCESS_ATTACH:
-		{
-			bool dplayRemoved = RemoveBadFile(L"dplay.dll"); // Fix: Internal error @ Startup
-			bool dplayxRemoved = RemoveBadFile(L"dplayx.dll"); // Fix: Internal error @ Startup
-			bool steamScriptRemoved = RemoveBadFile(L"steam_installscript.vdf"); // Fix: Force resetting compatibility by Steam
-			bool compatDisabled = DisableCompatibilityMode(); // Fix: Internal error @ Startup
-			if (dplayRemoved || dplayxRemoved || steamScriptRemoved || compatDisabled)
-			{
-				MessageBox(NULL, L"Please restart the game.", L"Information", MB_ICONINFORMATION);
-				ExitProcess(0);
-			}
-
-			if (!Patches::Apply())
-				ExitProcess(-1);
-
-		}	break;
-		case DLL_PROCESS_DETACH:
-			Patches::Release();
-			break;
-		default:
-			break;
+		MessageBox(NULL, L"Please restart the game.", L"Information", MB_ICONINFORMATION);
+		ExitProcess(0);
 	}
 
+	if (!Patches::Apply())
+		ExitProcess(-1);
+}
+
+#pragma comment(linker, "/EXPORT:ReleaseLibrary=_ReleaseLibrary@0")
+extern "C" void __stdcall ReleaseLibrary()
+{
+	Patches::Release();
+}
+
+BOOLEAN __stdcall DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved)
+{
 	return TRUE;
 }
