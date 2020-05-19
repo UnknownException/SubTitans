@@ -24,7 +24,6 @@ Unofficial Submarine Titans patch
 
 **Known bugs**
 * 1366*768 does not work correctly
-* The GUI may look weird at the bottom right corner for some factions
 
 **Other**
-Seems to fix/reduce the color bug. If you're still experiencing the color bug then please let me know.
+* Seems to fix/reduce the color bug. If you're still experiencing the color bug then please let me know.

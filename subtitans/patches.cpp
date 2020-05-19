@@ -274,9 +274,9 @@ void NativeResolution_RedesignFrame_Render()
 	memcpy(NativeResolution_RedesignFrame_FrameBuffer + 0x14, &imageSize, sizeof(int));
 
 	// Top bar
-	const int topLeftWidth = 410;
-	const int topMidWidth = 498;
-	const int topRightWidth = 372;
+	const int topLeftWidth = 426;
+	const int topMidWidth = 448;
+	const int topRightWidth = 406;
 	const int topHeight = 30;
 
 	NativeResolution_RedesignFrame_FillRect(0, 0, 0, 0, topLeftWidth, topHeight); // Left
@@ -331,9 +331,9 @@ void NativeResolution_RedesignFrame_Render()
 
 	// Right bar
 	const int rightWidth = 28;
-	const int rightTopHeight = 294;
-	const int rightMidHeight = 530;
-	const int rightBottomHeight = 138;
+	const int rightTopHeight = 336;
+	const int rightMidHeight = 422;
+	const int rightBottomHeight = 204;
 
 	NativeResolution_RedesignFrame_FillRect(1280 - rightWidth, topHeight, NativeResolution_RedesignFrame_Width - rightWidth, topHeight, rightWidth, rightTopHeight); // Top
 	const int rightMidRequiredHeight = NativeResolution_RedesignFrame_Height - rightTopHeight - rightBottomHeight - topHeight - bottomHeight;

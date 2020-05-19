@@ -19,13 +19,13 @@ bool IsApplicationSubTitans()
 	GetModuleFileName(NULL, applicationPath, MAX_PATH);
 
 	unsigned long headerSum;
-	unsigned long calcSum;
+	unsigned long checkSum;
 
 	// Non Kernel32
-	if (MapFileAndCheckSumW(applicationPath, &headerSum, &calcSum) != 0)
+	if (MapFileAndCheckSumW(applicationPath, &headerSum, &checkSum) != 0)
 		return false;
 
-	return calcSum == 0x004337AC;
+	return checkSum == 0x004337AC;
 }
 
 static HMODULE g_SubTitansLibrary = nullptr;
@@ -65,7 +65,7 @@ __declspec(naked) void LoadSubTitansModule_Detour()
 	__asm popad;
 
 	__asm mov eax, 0x00401FEB
-	__asm call eax; // WinMain?
+	__asm call eax;
 
 	__asm jmp LoadSubTitansModule_JmpBack;
 }
@@ -111,10 +111,10 @@ __declspec(naked) void UnloadSubTitansModule_Detour()
 BOOLEAN ApplyDetour(unsigned long origin, SIZE_T length, unsigned long destination)
 {
 	HANDLE currentProcess = GetCurrentProcess();
-	unsigned long* addressPointer = (unsigned long*)origin;
+	unsigned long* originPointer = (unsigned long*)origin;
 
 	unsigned long previousProtection = 0;
-	if (VirtualProtectEx(currentProcess, addressPointer, length, PAGE_EXECUTE_READWRITE, &previousProtection) == FALSE)
+	if (VirtualProtectEx(currentProcess, originPointer, length, PAGE_EXECUTE_READWRITE, &previousProtection) == FALSE)
 		return FALSE;
 
 	// Hard length limit of 6...
@@ -131,12 +131,12 @@ BOOLEAN ApplyDetour(unsigned long origin, SIZE_T length, unsigned long destinati
 	}
 
 	SIZE_T writtenBytes = 0;
-	if (WriteProcessMemory(currentProcess, addressPointer, bytesToCopy, length, &writtenBytes) == FALSE)
+	if (WriteProcessMemory(currentProcess, originPointer, bytesToCopy, length, &writtenBytes) == FALSE)
 		return FALSE;
 
-	FlushInstructionCache(currentProcess, addressPointer, length);
+	FlushInstructionCache(currentProcess, originPointer, length);
 
-	if (VirtualProtectEx(currentProcess, addressPointer, length, previousProtection, &previousProtection) == FALSE)
+	if (VirtualProtectEx(currentProcess, originPointer, length, previousProtection, &previousProtection) == FALSE)
 		return FALSE;
 
 	return TRUE;
