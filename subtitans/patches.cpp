@@ -598,12 +598,15 @@ bool Patches::Apply()
 		return false;
 	}
 
+#ifdef _DEBUG
 	// TODO Menu effects (Sleep based timing?) & Decoupling logics/rendering
+	// Issues with high speed gameplay setting
 	if (!SleepWell())
 	{
 		MessageBox(NULL, L"Failed to apply Sleep Well patch", L"Patching error", MB_ICONERROR);
 		return false;
 	}
+#endif
 
 	if (!DisableDrawStacking())
 	{

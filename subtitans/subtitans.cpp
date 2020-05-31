@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <string>
+#include <VersionHelpers.h>
 #include "patches.h"
 
 bool DisableCompatibilityMode()
@@ -47,13 +48,59 @@ bool RemoveBadFile(std::wstring file)
 	if (findResult == INVALID_FILE_ATTRIBUTES || findResult & FILE_ATTRIBUTE_DIRECTORY)
 		return false;
 
-//	if (MessageBox(NULL, L"The found DLL is known to cause issues.\nWhen deleting this file you'll be prompted to install DirectPlay, which you should.\nDo you want to delete this file?", dll.c_str(), MB_YESNO | MB_ICONWARNING) != IDYES)
-//		return false;
-
 	std::wstring fileBackup = L"" + file + L".bak";
 	MoveFileEx(file.c_str(), fileBackup.c_str(), MOVEFILE_REPLACE_EXISTING);
 
 	return true;
+}
+
+bool Windows7PaletteFix()
+{
+	if (IsWindows8OrGreater() || !IsWindows7OrGreater())
+		return false;
+
+	const unsigned long directDrawId = 0x396913d4;
+	const unsigned long flags = 0x00000800;
+	const std::wstring stExe = L"ST.exe";
+
+	const std::wstring registryKeyName(L"SOFTWARE\\Microsoft\\DirectDraw\\Compatibility\\SubmarineTitans");
+
+	HKEY registryKey;
+	unsigned long keyOpenResult;
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, registryKeyName.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &registryKey, &keyOpenResult) != ERROR_SUCCESS)
+	{
+		MessageBox(NULL, L"Failed to create Window 7 compatibility key", L"Error (Create Key)", MB_ICONERROR);
+		return false;
+	}
+
+	// No need to create if key exists
+	if (keyOpenResult == REG_OPENED_EXISTING_KEY)
+	{
+		RegCloseKey(registryKey);
+		return false;
+	}
+
+	bool success = true;
+
+	if (RegSetValueEx(registryKey, L"ID", 0, REG_BINARY, (const BYTE*)&directDrawId, sizeof(unsigned long)) != ERROR_SUCCESS)
+		success = false;
+
+	if (RegSetValueEx(registryKey, L"Flags", 0, REG_BINARY, (const BYTE*)&flags, sizeof(unsigned long)) != ERROR_SUCCESS)
+		success = false;
+
+	if (RegSetValueEx(registryKey, L"Name", 0, REG_SZ, (const BYTE*)stExe.c_str(), stExe.length() * sizeof(WCHAR) + 1) != ERROR_SUCCESS)
+		success = false;
+
+	RegCloseKey(registryKey);
+
+	if (!success)
+	{
+		MessageBox(NULL, L"Failed to set values for Window 7 compatibility key", L"Error (Fill Key)", MB_ICONERROR);
+		if (RegDeleteKey(HKEY_LOCAL_MACHINE, registryKeyName.c_str()) != ERROR_SUCCESS)
+			MessageBox(NULL, L"Failed to remove Window 7 compatibility key", L"Error (Delete Key)", MB_ICONERROR);
+	}
+
+	return success;
 }
 
 #pragma comment(linker, "/EXPORT:InitializeLibrary=_InitializeLibrary@0")
@@ -63,7 +110,8 @@ extern "C" void __stdcall InitializeLibrary()
 	bool dplayxRemoved = RemoveBadFile(L"dplayx.dll"); // Fix: Internal error @ Startup
 	bool steamScriptRemoved = RemoveBadFile(L"steam_installscript.vdf"); // Fix: Force resetting compatibility by Steam
 	bool compatDisabled = DisableCompatibilityMode(); // Fix: Internal error @ Startup
-	if (dplayRemoved || dplayxRemoved || steamScriptRemoved || compatDisabled)
+	bool windows7PaletteFixApplied = Windows7PaletteFix(); // Fix: Broken palette (Windows 7)
+	if (dplayRemoved || dplayxRemoved || steamScriptRemoved || compatDisabled || windows7PaletteFixApplied)
 	{
 		MessageBox(NULL, L"Please restart the game.", L"Information", MB_ICONINFORMATION);
 		ExitProcess(0);
