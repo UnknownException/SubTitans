@@ -533,11 +533,14 @@ unsigned long constexpr SleepWell_Implementation_JmpBack = SleepWell_Implementat
 static unsigned long SleepWell_Implementation_CurrentTime = timeGetTime();
 static unsigned long SleepWell_Implementation_PreviousTime = timeGetTime();
 static unsigned long SleepWell_Implementation_Difference = 0;
-unsigned long constexpr SleepWell_Implementation_FrameLimit = 1000 / 25; // TODO: Decouple logics & rendering (clock is correct @ 25fps) <-- Seems to cause issues with some menu effects
+static unsigned long SleepWell_Implementation_FrameLimit = 1000 / 25;
 __declspec(naked) void SleepWell_Implementation()
 {
 	__asm pushad;
 	__asm pushfd;
+
+	__asm mov eax, dword ptr ds:[0x00808024];
+	__asm mov SleepWell_Implementation_FrameLimit, eax;
 
 	SleepWell_Implementation_CurrentTime = timeGetTime();
 	SleepWell_Implementation_Difference = SleepWell_Implementation_CurrentTime - SleepWell_Implementation_PreviousTime;
@@ -598,15 +601,11 @@ bool Patches::Apply()
 		return false;
 	}
 
-#ifdef _DEBUG
-	// TODO Menu effects (Sleep based timing?) & Decoupling logics/rendering
-	// Issues with high speed gameplay setting
 	if (!SleepWell())
 	{
 		MessageBox(NULL, L"Failed to apply Sleep Well patch", L"Patching error", MB_ICONERROR);
 		return false;
 	}
-#endif
 
 	if (!DisableDrawStacking())
 	{

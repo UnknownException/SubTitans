@@ -1,0 +1,65 @@
+name: SubTitans Development
+on:
+  push:
+    branches: [ development ]
+jobs:
+  build:
+    name: Build SubTitans
+    runs-on: windows-2019
+    steps:
+      - name: Create Timestamp
+        id: create_timestamp
+        run: $buildTime = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"; Write-Host "::set-output name=release_datestamp::$buildTime"
+        
+#https://github.com/marketplace/actions/checkout
+      - name: Check out
+        uses: actions/checkout@v2
+        with:
+          ref: development
+
+#https://github.com/marketplace/actions/setup-msbuild          
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.0
+
+      - name: Compile
+        shell: cmd
+        run: msbuild SubTitans.sln -p:Configuration=Release -p:Platform=x86
+
+      - name: Create Zip
+        shell: powershell
+        run: |
+          Rename-Item -Path README.md -NewName readme.txt
+          Rename-Item -Path LICENSE -NewName license.txt
+          $compress = @{
+            Path = "Release/*.dll", "readme.txt", "license.txt"
+            DestinationPath = "SubTitans.zip"
+            Force = $True
+          }
+          Compress-Archive @compress
+
+#https://github.com/marketplace/actions/create-a-release        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create_timestamp.outputs.release_datestamp }}
+          release_name: Development ${{ steps.create_timestamp.outputs.release_datestamp }}
+          body: |
+            Development Release
+            See readme.txt
+          draft: false
+          prerelease: true
+
+#https://github.com/marketplace/actions/upload-a-release-asset
+      - name: Upload Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./SubTitans.zip
+          asset_name: Dev-SubTitans-${{ steps.create_timestamp.outputs.release_datestamp }}.zip
+          asset_content_type: application/zip
