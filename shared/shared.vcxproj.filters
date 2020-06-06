@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="gameversion.h" />
+    <ClInclude Include="detour.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="memorywriter.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="memory">
+      <UniqueIdentifier>{9b895b6d-8336-44b3-9ef4-43a43db59e08}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="detour.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="error.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memorywriter.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="logger.cpp" />
+  </ItemGroup>
+</Project>
