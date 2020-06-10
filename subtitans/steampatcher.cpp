@@ -7,6 +7,7 @@
 #include "sleepwellpatch.h"
 #include "disabledrawstackingpatch.h"
 #include "steampatcher.h"
+#include "preventresizepatch.h"
 
 namespace Steam{
 	bool DisableCompatibilityMode()
@@ -167,11 +168,17 @@ void SteamPatcher::Configure()
 	_patches.push_back(highDPIPatch);
 
 	auto sleepWellPatch = new SleepWellPatch();
-	sleepWellPatch->DetourAddress = 0x006E6253;
-	sleepWellPatch->FPSMemoryAddress = 0x00808024;
+	sleepWellPatch->DetourAddress = 0x006E6314;
+	sleepWellPatch->FrameLimitMemoryAddress = 0x00808024;
+	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x006E633B;
 	_patches.push_back(sleepWellPatch);
 
 	auto disableDrawStackingPatch = new DisableDrawStackingPatch();
 	disableDrawStackingPatch->Address = 0x006B7293;
 	_patches.push_back(disableDrawStackingPatch);
+
+	auto preventResizePatch = new PreventResizePatch();
+	preventResizePatch->SetDisplayModeDetourAddress = 0x006BAEE6;
+	preventResizePatch->RestoreDisplayModeAddress = 0x006BAE26;
+	_patches.push_back(preventResizePatch);
 }

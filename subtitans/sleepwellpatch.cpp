@@ -3,10 +3,10 @@
 
 namespace SleepWell{
 	// Detour variables
-	constexpr unsigned long DetourSize = 10;
+	constexpr unsigned long DetourSize = 5;
 	static unsigned long JmpFromAddress = 0;
 	static unsigned long JmpBackAddress = 0;
-	static unsigned long FPSMemoryAddress = 0;
+	static unsigned long FrameLimitMemoryAddress = 0;
 
 	// Function specific variables
 	static unsigned long CurrentTime = timeGetTime();
@@ -19,7 +19,7 @@ namespace SleepWell{
 		__asm pushad;
 		__asm pushfd;
 
-		__asm mov eax, [FPSMemoryAddress];
+		__asm mov eax, [FrameLimitMemoryAddress];
 		__asm mov eax, [eax];
 		__asm mov [FrameLimit], eax;
 
@@ -38,6 +38,11 @@ namespace SleepWell{
 
 		__asm popfd;
 		__asm popad;
+
+		// Restore
+		__asm mov eax, dword ptr ds:[esi + 0x20];
+		__asm test eax, eax;
+
 		__asm jmp [JmpBackAddress];
 	}
 }
@@ -47,7 +52,8 @@ SleepWellPatch::SleepWellPatch()
 	GetLogger()->Informational("Initializing %s\n", __func__);
 
 	DetourAddress = 0;
-	FPSMemoryAddress = 0;
+	FrameLimitMemoryAddress = 0;
+	DisableOriginalLimiterSleepAddress = 0;
 }
 
 SleepWellPatch::~SleepWellPatch()
@@ -56,7 +62,7 @@ SleepWellPatch::~SleepWellPatch()
 
 bool SleepWellPatch::Validate()
 {
-	return DetourAddress != 0 && FPSMemoryAddress != 0;
+	return DetourAddress != 0 && FrameLimitMemoryAddress != 0 && DisableOriginalLimiterSleepAddress != 0;
 }
 
 bool SleepWellPatch::Apply()
@@ -65,9 +71,13 @@ bool SleepWellPatch::Apply()
 
 	SleepWell::JmpFromAddress = DetourAddress;
 	SleepWell::JmpBackAddress = SleepWell::JmpFromAddress + SleepWell::DetourSize;
-	SleepWell::FPSMemoryAddress = FPSMemoryAddress;
+	SleepWell::FrameLimitMemoryAddress = FrameLimitMemoryAddress;
 
 	if (!Detour::Create(SleepWell::JmpFromAddress, SleepWell::DetourSize, (unsigned long)SleepWell::Implementation))
+		return false;
+
+	unsigned char removeOriginalSleepCall[] = { 0x8B, 0xCE, 0x90, 0x90, 0x90, 0x90 };
+	if (!MemoryWriter::Write(DisableOriginalLimiterSleepAddress, removeOriginalSleepCall, sizeof(removeOriginalSleepCall)))
 		return false;
 
 	return true;

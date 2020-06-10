@@ -11,5 +11,6 @@ public:
 	const wchar_t* ErrorMessage() override;
 
 	unsigned long DetourAddress;
-	unsigned long FPSMemoryAddress;
+	unsigned long FrameLimitMemoryAddress;
+	unsigned long DisableOriginalLimiterSleepAddress;
 };

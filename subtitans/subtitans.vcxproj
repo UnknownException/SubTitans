@@ -82,6 +82,7 @@
     <ClCompile Include="highdpipatch.cpp" />
     <ClCompile Include="nativeresolutionpatch.cpp" />
     <ClCompile Include="patcher.cpp" />
+    <ClCompile Include="preventresizepatch.cpp" />
     <ClCompile Include="sleepwellpatch.cpp" />
     <ClCompile Include="steampatchedpatcher.cpp" />
     <ClCompile Include="steampatcher.cpp" />
@@ -95,6 +96,7 @@
     <ClInclude Include="nativeresolutionpatch.h" />
     <ClInclude Include="patch.h" />
     <ClInclude Include="patcher.h" />
+    <ClInclude Include="preventresizepatch.h" />
     <ClInclude Include="sleepwellpatch.h" />
     <ClInclude Include="steampatchedpatcher.h" />
     <ClInclude Include="steampatcher.h" />
