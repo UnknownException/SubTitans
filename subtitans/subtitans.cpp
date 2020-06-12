@@ -27,17 +27,19 @@ extern "C" void __stdcall InitializeLibrary(unsigned long gameVersion)
 		case Shared::ST_GAMEVERSION_STEAM:
 			g_GamePatcher = new SteamPatcher();
 			GetLogger()->Informational("Version: Steam (1.0)\n");
+			GetLogger()->Warning("Consider updating to 1.1\n");
 			break;
-//		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
-//			g_GamePatcher = new SteamPatchedPatcher();
-//			g_Logger->Informational("Version: Steam (1.1)\n");
-//			break;			
+		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
+			g_GamePatcher = new SteamPatchedPatcher();
+			GetLogger()->Informational("Version: Steam/Retail (1.1)\n");
+			break;			
 		case Shared::ST_GAMEVERSION_GOG:
 			g_GamePatcher = new GOGPatcher();
 			GetLogger()->Informational("Version: GOG (1.1)\n");
 			break;
 		default:
-			GetLogger()->Critical("Non compatible application\n");
+			GetLogger()->Critical("Incompatible application\n");
+			MessageBox(NULL, L"Incompatible application", L"subtitans.dll", MB_ICONERROR);
 			ExitProcess(-1);
 			break;
 	}

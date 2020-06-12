@@ -135,6 +135,7 @@ namespace Injector {
 
 				StartApplicationAddress = 0x00401FEB;
 			} break;
+			case Shared::ST_GAMEVERSION_STEAM_PATCHED:
 			case Shared::ST_GAMEVERSION_GOG:
 			{
 				LoadModule_JmpFrom = 0x007337FE;

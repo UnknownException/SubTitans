@@ -49,7 +49,7 @@ namespace SleepWell{
 
 SleepWellPatch::SleepWellPatch()
 {
-	GetLogger()->Informational("Initializing %s\n", __func__);
+	GetLogger()->Informational("Constructing %s\n", __func__);
 
 	DetourAddress = 0;
 	FrameLimitMemoryAddress = 0;
@@ -58,6 +58,7 @@ SleepWellPatch::SleepWellPatch()
 
 SleepWellPatch::~SleepWellPatch()
 {
+	GetLogger()->Informational("Destructing %s\n", __func__);
 }
 
 bool SleepWellPatch::Validate()

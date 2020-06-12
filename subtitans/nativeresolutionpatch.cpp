@@ -293,7 +293,7 @@ namespace NativeResolution{
 
 NativeResolutionPatch::NativeResolutionPatch()
 {
-	GetLogger()->Informational("Initializing %s\n", __func__);
+	GetLogger()->Informational("Constructing %s\n", __func__);
 	
 	GuiRescalerAddress = 0;
 
@@ -323,6 +323,8 @@ NativeResolutionPatch::NativeResolutionPatch()
 
 NativeResolutionPatch::~NativeResolutionPatch()
 {
+	GetLogger()->Informational("Destructing %s\n", __func__);
+
 	if (NativeResolution::RedesignFrame::FrameBuffer != nullptr)
 		delete[] NativeResolution::RedesignFrame::FrameBuffer;
 }
@@ -364,7 +366,7 @@ bool NativeResolutionPatch::Apply()
 
 	if (screenWidth == 1366 && screenHeight == 768)
 	{
-		MessageBox(NULL, L"1366x768 causes rendering issues; trying 1280x768", L"Warning", MB_ICONWARNING);
+		GetLogger()->Warning("1366x768 causes rendering issues; trying 1280x768\n");
 		screenWidth = 1280;
 	}
 

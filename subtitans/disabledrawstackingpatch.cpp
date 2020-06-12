@@ -3,13 +3,14 @@
 
 DisableDrawStackingPatch::DisableDrawStackingPatch()
 {
-	GetLogger()->Informational("Initializing %s\n", __func__);
+	GetLogger()->Informational("Constructing %s\n", __func__);
 
 	Address = 0;
 }
 
 DisableDrawStackingPatch::~DisableDrawStackingPatch()
 {
+	GetLogger()->Informational("Destructing %s\n", __func__);
 }
 
 bool DisableDrawStackingPatch::Validate()

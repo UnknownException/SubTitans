@@ -1,11 +1,10 @@
-#include "detour.h"
 #include "memorywriter.h"
-#include "error.h"
+#include "detour.h"
 
 bool Detour::Create(unsigned long origin, SIZE_T length, unsigned long destination)
 {
 	if (length < 5)
-		return Error::WriteErrorAndReturnFalse(L"Detour length should be bigger or equal 5", origin);
+		return false;
 
 	unsigned char* newBytes = new unsigned char[length];
 	memset(newBytes, 0x90, length); // Fill with nops
@@ -14,12 +13,8 @@ bool Detour::Create(unsigned long origin, SIZE_T length, unsigned long destinati
 	unsigned long jumpDistance = destination - origin - 5;
 	memcpy(&newBytes[1], &jumpDistance, sizeof(unsigned long)); // Jump distance
 
-	if (!MemoryWriter::Write(origin, newBytes, length))
-	{
-		delete[] newBytes;
-		return Error::WriteErrorAndReturnFalse(L"Failed to create detour", origin);
-	}
+	bool result = MemoryWriter::Write(origin, newBytes, length);
 
 	delete[] newBytes;
-	return true;
+	return result;
 }

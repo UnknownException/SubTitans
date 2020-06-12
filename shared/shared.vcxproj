@@ -12,14 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detour.h" />
-    <ClInclude Include="error.h" />
     <ClInclude Include="gameversion.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="memorywriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="detour.cpp" />
-    <ClCompile Include="error.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="memorywriter.cpp" />
   </ItemGroup>

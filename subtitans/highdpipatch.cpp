@@ -102,7 +102,7 @@ namespace HighDPI{
 
 HighDPIPatch::HighDPIPatch()
 {
-	GetLogger()->Informational("Initializing %s\n", __func__);
+	GetLogger()->Informational("Constructing %s\n", __func__);
 
 	RetrieveCursorFromWindowsMessageDetourAddress = 0;
 	IgnoreDInputMovementDetourAddress = 0;
@@ -113,7 +113,7 @@ HighDPIPatch::HighDPIPatch()
 
 HighDPIPatch::~HighDPIPatch()
 {
-
+	GetLogger()->Informational("Destructing %s\n", __func__);
 }
 
 bool HighDPIPatch::Validate()

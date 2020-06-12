@@ -12,4 +12,5 @@ public:
 
 	unsigned long FlagAddress1;
 	unsigned long FlagAddress2;
+	unsigned long RestoreDisplayModeAddress;
 };

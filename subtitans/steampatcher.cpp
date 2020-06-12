@@ -7,7 +7,6 @@
 #include "sleepwellpatch.h"
 #include "disabledrawstackingpatch.h"
 #include "steampatcher.h"
-#include "preventresizepatch.h"
 
 namespace Steam{
 	bool DisableCompatibilityMode()
@@ -61,7 +60,7 @@ namespace Steam{
 		return true;
 	}
 
-	bool Windows7PaletteFix(unsigned long directDrawId)
+	bool Windows7PaletteFix(unsigned long directDrawId, std::wstring registryKeyPostfix)
 	{
 		if (IsWindows8OrGreater() || !IsWindows7OrGreater())
 			return false;
@@ -69,7 +68,7 @@ namespace Steam{
 		constexpr unsigned long flags = 0x00000800;
 		const std::wstring stExe = L"ST.exe";
 
-		const std::wstring registryKeyName(L"SOFTWARE\\Microsoft\\DirectDraw\\Compatibility\\SubmarineTitans");
+		const std::wstring registryKeyName(L"SOFTWARE\\Microsoft\\DirectDraw\\Compatibility\\SubmarineTitans" + registryKeyPostfix);
 
 		HKEY registryKey;
 		unsigned long keyOpenResult;
@@ -112,7 +111,8 @@ namespace Steam{
 
 SteamPatcher::SteamPatcher()
 {
-	_directDrawId = 0x396913d4;
+	_directDrawId = 0x396913D4;
+	_windows7CompatibilityKeyPostfix = L"";
 }
 
 SteamPatcher::~SteamPatcher()
@@ -125,7 +125,7 @@ bool SteamPatcher::Initialize()
 	bool dplayxRemoved = Steam::RemoveBadFile(L"dplayx.dll"); // Fix: Internal error @ Startup
 	bool steamScriptRemoved = Steam::RemoveBadFile(L"steam_installscript.vdf"); // Fix: Force resetting compatibility by Steam
 	bool compatDisabled = Steam::DisableCompatibilityMode(); // Fix: Internal error @ Startup
-	bool windows7PaletteFixApplied = Steam::Windows7PaletteFix(_directDrawId); // Fix: Broken palette (Windows 7)
+	bool windows7PaletteFixApplied = Steam::Windows7PaletteFix(_directDrawId, _windows7CompatibilityKeyPostfix); // Fix: Broken palette (Windows 7)
 
 	if (dplayRemoved || dplayxRemoved || steamScriptRemoved || compatDisabled || windows7PaletteFixApplied)
 		return false;
@@ -138,6 +138,7 @@ void SteamPatcher::Configure()
 	auto windowedModePatch = new WindowedModePatch();
 	windowedModePatch->FlagAddress1 = 0x006BAC5F;
 	windowedModePatch->FlagAddress2 = 0x006BAEA6;
+	windowedModePatch->RestoreDisplayModeAddress = 0x006BAE26;
 	_patches.push_back(windowedModePatch);
 
 	auto nativeResolutionPatch = new NativeResolutionPatch();
@@ -176,9 +177,4 @@ void SteamPatcher::Configure()
 	auto disableDrawStackingPatch = new DisableDrawStackingPatch();
 	disableDrawStackingPatch->Address = 0x006B7293;
 	_patches.push_back(disableDrawStackingPatch);
-
-	auto preventResizePatch = new PreventResizePatch();
-	preventResizePatch->SetDisplayModeDetourAddress = 0x006BAEE6;
-	preventResizePatch->RestoreDisplayModeAddress = 0x006BAE26;
-	_patches.push_back(preventResizePatch);
 }

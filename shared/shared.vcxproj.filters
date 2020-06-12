@@ -5,9 +5,6 @@
     <ClInclude Include="detour.h">
       <Filter>memory</Filter>
     </ClInclude>
-    <ClInclude Include="error.h">
-      <Filter>memory</Filter>
-    </ClInclude>
     <ClInclude Include="memorywriter.h">
       <Filter>memory</Filter>
     </ClInclude>
@@ -20,9 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="detour.cpp">
-      <Filter>memory</Filter>
-    </ClCompile>
-    <ClCompile Include="error.cpp">
       <Filter>memory</Filter>
     </ClCompile>
     <ClCompile Include="memorywriter.cpp">

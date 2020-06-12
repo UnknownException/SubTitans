@@ -30,6 +30,7 @@ unsigned long GetSubTitansVersion()
 	switch (checkSum)
 	{
 		case Shared::ST_GAMEVERSION_STEAM:
+		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
 		case Shared::ST_GAMEVERSION_GOG:
 			return checkSum;
 
@@ -48,6 +49,7 @@ BOOLEAN __stdcall DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved)
 		switch (gameVersion)
 		{
 			case Shared::ST_GAMEVERSION_STEAM:
+			case Shared::ST_GAMEVERSION_STEAM_PATCHED:
 			case Shared::ST_GAMEVERSION_GOG:
 			{
 				return Injector::Apply(gameVersion) ? TRUE : FALSE;

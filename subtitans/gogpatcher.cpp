@@ -1,6 +1,6 @@
 #include "subtitans.h"
 #include "nativeresolutionpatch.h"
-//#include "disabledrawstackingpatch.h"
+#include "sleepwellpatch.h"
 #include "gogpatcher.h"
 
 GOGPatcher::GOGPatcher()
@@ -15,8 +15,6 @@ GOGPatcher::~GOGPatcher()
 
 void GOGPatcher::Configure()
 {
-	// (Windowed mode) not required (gog ddraw)
-
 	auto nativeResolutionPatch = new NativeResolutionPatch();
 	nativeResolutionPatch->GuiRescalerAddress = 0x004F19E4; // 0x004F3254;
 	nativeResolutionPatch->QueueScreenAddress = 0x004F845B; //0x004F9CCB;
@@ -37,12 +35,9 @@ void GOGPatcher::Configure()
 	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738; //0x0040372E;
 	_patches.push_back(nativeResolutionPatch);
 
-	// (HighDPI) GOG seems to affect high dpi resolutions; ignore this for now
-
-	// (SleepWell) Implementation seems to require some attention for high speed setting; not important for the gog release right now
-
-	// (DisableDrawStacking) Doesn't result in a noticable improvement for GOG version (gog ddraw)
-	//auto disableDrawStackingPatch = new DisableDrawStackingPatch();
-	//disableDrawStackingPatch->Address = 0x006B5FE3; //0x006B7293;
-	//_patches.push_back(disableDrawStackingPatch);
+	auto sleepWellPatch = new SleepWellPatch();
+	sleepWellPatch->DetourAddress = 0x006E5064; // 0x006E6314;
+	sleepWellPatch->FrameLimitMemoryAddress = 0x00807654; // 0x00808024;
+	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x006E508B; // 0x006E633B;
+	_patches.push_back(sleepWellPatch);
 }

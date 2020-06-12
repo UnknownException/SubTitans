@@ -3,7 +3,7 @@ Unofficial Submarine Titans patch
 
 **Requirements**
 * Windows 10 (Windows 7 works but isn't actively tested)
-* Steam version (1.0) or GOG version (1.1) of Submarine Titans (Original is untested)
+* Supports Steam v1.0, Retail v1.1 and GOG v1.1
 
 **Features**
 * Support for native resolution (tested up to 3840x2160)
