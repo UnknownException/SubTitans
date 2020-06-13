@@ -49,6 +49,7 @@ void SteamPatchedPatcher::Configure()
 	highDPIPatch->RetrieveCursorFromWindowsMessageDetourAddress = 0x006E5009; // 0x006E62B9;
 	highDPIPatch->IgnoreDInputMovementDetourAddress = 0x0071B6CC; // 0x0071C9C0;
 	highDPIPatch->OverrideWindowSizeDetourAddress = 0x006B9C3E; // 0x006BAEEE;
+	highDPIPatch->MouseExclusiveFlagAddress = 0x0071B32F; // 0x0071C5E4;
 	highDPIPatch->CheckIfValidResolutionAddress = 0x0056D848; // 0x0056F088;
 	_patches.push_back(highDPIPatch);
 

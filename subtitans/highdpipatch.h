@@ -13,6 +13,7 @@ public:
 	unsigned long RetrieveCursorFromWindowsMessageDetourAddress;
 	unsigned long IgnoreDInputMovementDetourAddress;
 	unsigned long OverrideWindowSizeDetourAddress;
+	unsigned long MouseExclusiveFlagAddress;
 
 	unsigned long CheckIfValidResolutionAddress;
 };

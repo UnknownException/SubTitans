@@ -107,6 +107,7 @@ HighDPIPatch::HighDPIPatch()
 	RetrieveCursorFromWindowsMessageDetourAddress = 0;
 	IgnoreDInputMovementDetourAddress = 0;
 	OverrideWindowSizeDetourAddress = 0;
+	MouseExclusiveFlagAddress = 0;
 
 	CheckIfValidResolutionAddress = 0;
 }
@@ -121,6 +122,7 @@ bool HighDPIPatch::Validate()
 	if (!RetrieveCursorFromWindowsMessageDetourAddress ||
 		!IgnoreDInputMovementDetourAddress ||
 		!OverrideWindowSizeDetourAddress ||
+		!MouseExclusiveFlagAddress ||
 		!CheckIfValidResolutionAddress)
 		return false;
 
@@ -171,14 +173,21 @@ bool HighDPIPatch::Apply()
 	if (!Detour::Create(HighDPI::OverrideWindowSize::JmpFromAddress, HighDPI::OverrideWindowSize::DetourSize, (unsigned long)HighDPI::OverrideWindowSize::Implementation))
 		return false;
 
+	// Only affects 1.1; v1.0 is already 6
+	// 5 = EXCLUSIVE | FOREGROUND
+	// 6 = NONEXCLUSIVE | FOREGROUND
+	unsigned char mouseFlags = 0x06; 
+	if(!MemoryWriter::Write(MouseExclusiveFlagAddress, &mouseFlags, 1))
+		return false;
+
 	// Nasty disable valid resolution check
 	const SIZE_T nopArrayLength = 45;
 	unsigned char* nopArray = new unsigned char[nopArrayLength];
 	memset(nopArray, 0x90, nopArrayLength);
-	MemoryWriter::Write(CheckIfValidResolutionAddress, nopArray, nopArrayLength);
+	bool result = MemoryWriter::Write(CheckIfValidResolutionAddress, nopArray, nopArrayLength);
 	delete[] nopArray;
 
-	return true;
+	return result;
 }
 
 const wchar_t* HighDPIPatch::ErrorMessage()
