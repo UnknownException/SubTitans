@@ -2,32 +2,73 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="subtitans.cpp" />
-    <ClCompile Include="detour.cpp">
-      <Filter>memory</Filter>
+    <ClCompile Include="patcher.cpp">
+      <Filter>patcher</Filter>
     </ClCompile>
-    <ClCompile Include="memorywriter.cpp">
-      <Filter>memory</Filter>
+    <ClCompile Include="steampatcher.cpp">
+      <Filter>patcher</Filter>
     </ClCompile>
-    <ClCompile Include="patches.cpp" />
-    <ClCompile Include="error.cpp">
-      <Filter>memory</Filter>
+    <ClCompile Include="windowedmodepatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="sleepwellpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="disabledrawstackingpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="nativeresolutionpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="highdpipatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="steampatchedpatcher.cpp">
+      <Filter>patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="gogpatcher.cpp">
+      <Filter>patcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detour.h">
-      <Filter>memory</Filter>
+    <ClInclude Include="patcher.h">
+      <Filter>patcher</Filter>
     </ClInclude>
-    <ClInclude Include="memorywriter.h">
-      <Filter>memory</Filter>
+    <ClInclude Include="steampatcher.h">
+      <Filter>patcher</Filter>
     </ClInclude>
-    <ClInclude Include="patches.h" />
-    <ClInclude Include="error.h">
-      <Filter>memory</Filter>
+    <ClInclude Include="windowedmodepatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="sleepwellpatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="patch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="disabledrawstackingpatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="nativeresolutionpatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="gogpatcher.h">
+      <Filter>patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="highdpipatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="subtitans.h" />
+    <ClInclude Include="steampatchedpatcher.h">
+      <Filter>patcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="memory">
-      <UniqueIdentifier>{28a6e76e-3551-47da-97c8-7a7d3a30b280}</UniqueIdentifier>
+    <Filter Include="patcher">
+      <UniqueIdentifier>{e3532ddf-e57d-41bd-a5df-615eb2473d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="patches">
+      <UniqueIdentifier>{de28ff75-bb05-4d2f-a46c-e8e9928ad7a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

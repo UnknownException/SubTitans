@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "d3drm", "d3drm\d3drm.vcxproj", "{229FEA89-DB14-4AD2-BD12-878FE36496F0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "subtitans", "subtitans\subtitans.vcxproj", "{033CA3B5-4016-489A-943E-663953F6F89A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5F2C7921-4B31-4712-8722-C99EFF304EC4} = {5F2C7921-4B31-4712-8722-C99EFF304EC4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcxproj", "{5F2C7921-4B31-4712-8722-C99EFF304EC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Debug|x86.Build.0 = Debug|Win32
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x86.ActiveCfg = Release|Win32
 		{033CA3B5-4016-489A-943E-663953F6F89A}.Release|x86.Build.0 = Release|Win32
+		{5F2C7921-4B31-4712-8722-C99EFF304EC4}.Debug|x86.ActiveCfg = Debug|Win32
+		{5F2C7921-4B31-4712-8722-C99EFF304EC4}.Debug|x86.Build.0 = Debug|Win32
+		{5F2C7921-4B31-4712-8722-C99EFF304EC4}.Release|x86.ActiveCfg = Release|Win32
+		{5F2C7921-4B31-4712-8722-C99EFF304EC4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

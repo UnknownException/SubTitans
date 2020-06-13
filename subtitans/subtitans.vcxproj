@@ -77,17 +77,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="detour.cpp" />
-    <ClCompile Include="error.cpp" />
-    <ClCompile Include="memorywriter.cpp" />
-    <ClCompile Include="patches.cpp" />
+    <ClCompile Include="disabledrawstackingpatch.cpp" />
+    <ClCompile Include="gogpatcher.cpp" />
+    <ClCompile Include="highdpipatch.cpp" />
+    <ClCompile Include="nativeresolutionpatch.cpp" />
+    <ClCompile Include="patcher.cpp" />
+    <ClCompile Include="sleepwellpatch.cpp" />
+    <ClCompile Include="steampatchedpatcher.cpp" />
+    <ClCompile Include="steampatcher.cpp" />
     <ClCompile Include="subtitans.cpp" />
+    <ClCompile Include="windowedmodepatch.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detour.h" />
-    <ClInclude Include="error.h" />
-    <ClInclude Include="memorywriter.h" />
-    <ClInclude Include="patches.h" />
+    <ClInclude Include="disabledrawstackingpatch.h" />
+    <ClInclude Include="gogpatcher.h" />
+    <ClInclude Include="highdpipatch.h" />
+    <ClInclude Include="nativeresolutionpatch.h" />
+    <ClInclude Include="patch.h" />
+    <ClInclude Include="patcher.h" />
+    <ClInclude Include="sleepwellpatch.h" />
+    <ClInclude Include="steampatchedpatcher.h" />
+    <ClInclude Include="steampatcher.h" />
+    <ClInclude Include="subtitans.h" />
+    <ClInclude Include="windowedmodepatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

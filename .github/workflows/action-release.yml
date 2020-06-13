@@ -45,10 +45,10 @@ jobs:
           tag_name: ${{ steps.create_timestamp.outputs.release_datestamp }}
           release_name: Release ${{ steps.create_timestamp.outputs.release_datestamp }}
           body: |
-            Test Release
-            See README.MD
+            Release from master branch
+            See README.MD/readme.txt
           draft: false
-          prerelease: true
+          prerelease: false
 
 #https://github.com/marketplace/actions/upload-a-release-asset
       - name: Upload Release
