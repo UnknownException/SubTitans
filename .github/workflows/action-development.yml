@@ -47,8 +47,8 @@ jobs:
           tag_name: ${{ steps.create_timestamp.outputs.release_datestamp }}
           release_name: Development ${{ steps.create_timestamp.outputs.release_datestamp }}
           body: |
-            Development Release
-            See readme.txt
+            Release from development branch
+            See README.MD/readme.txt
           draft: false
           prerelease: true
 
