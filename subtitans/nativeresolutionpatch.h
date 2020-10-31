@@ -24,6 +24,9 @@ public:
 	unsigned long GamefieldPresetWidthAddress;
 	unsigned long GamefieldPresetHeightAddress;
 
+	unsigned long GamefieldHeightReducingAddress;
+	unsigned long GamefieldHeightRestorationAddress;
+
 	unsigned long MovieWidthAddress;
 	unsigned long MovieHeightAddress;
 
@@ -33,4 +36,5 @@ public:
 	unsigned long RedesignFrameDetourAddress;
 	unsigned long RedesignFrameTeamIdMemoryAddress;
 	unsigned long RedesignFrameDrawFunctionAddress;
+	unsigned long RepositionBriefingDetourAddress;
 };
