@@ -26,7 +26,7 @@ Q: How to update Submarine Titans to version 1.1? \
 A: https://steamcommunity.com/sharedfiles/filedetails/?id=2129291420 \
  \
 Q: Why is the game running so slow? (Steam/Retail only) \
-A: Submarine Titan uses DirectDraw, a deprecated piece of technology from a bygone era. A patch to circumvent DirectDraw is in development. \
+A: Submarine Titan uses DirectDraw, a deprecated piece of technology from a bygone era. A patch to circumvent DirectDraw is in development.
 
 **Known bugs**
 * 1366*768 does not function correctly, reverts to 1280x768 ingame.
