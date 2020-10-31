@@ -18,15 +18,15 @@ Unofficial Submarine Titans patch
 2. Open STConfig.exe and select 1280x1024.
 3. Run the game (through ST.exe or Steam).
 
-**Q&A**
-Q: Help, I'm getting MSVCP140.dll errors!
-A: Install vc_redist.x86.exe ( https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads ).
-
-Q: How to update Submarine Titans to version 1.1?
-A: https://steamcommunity.com/sharedfiles/filedetails/?id=2129291420
-
-Q: Why is the game running so slow? (Steam/Retail only)
-A: Submarine Titan uses DirectDraw, a deprecated piece of technology from a bygone era. A patch to circumvent DirectDraw is in development.
+**Q&A** \
+Q: Help, I'm getting MSVCP140.dll errors! \
+A: Install vc_redist.x86.exe ( https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads ). \
+ \
+Q: How to update Submarine Titans to version 1.1? \
+A: https://steamcommunity.com/sharedfiles/filedetails/?id=2129291420 \
+ \
+Q: Why is the game running so slow? (Steam/Retail only) \
+A: Submarine Titan uses DirectDraw, a deprecated piece of technology from a bygone era. A patch to circumvent DirectDraw is in development. \
 
 **Known bugs**
 * 1366*768 does not function correctly, reverts to 1280x768 ingame.
