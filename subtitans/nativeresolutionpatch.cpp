@@ -2,14 +2,13 @@
 #include "nativeresolutionpatch.h"
 
 namespace NativeResolution{
+	static unsigned long ControlPanelMarginLeft = 0;
+
 	namespace RepositionBottomMenu{
 		// Detour variables
 		constexpr unsigned long DetourSize = 26;
 		static unsigned long JmpFromAddress = 0;
 		static unsigned long JmpBackAddress = JmpFromAddress + DetourSize;
-
-		// Function specific variables
-		static unsigned long MarginLeft = 0;
 
 		__declspec(naked) void Implementation()
 		{
@@ -30,7 +29,7 @@ namespace NativeResolution{
 			__asm mov edx, 0x00
 
 		ASM_NR_RBM_DONTOVERRIDEDEFAULT:
-			__asm add edx, [MarginLeft]; // Widescreen reposition value
+			__asm add edx, [ControlPanelMarginLeft]; // Widescreen reposition value
 
 		ASM_NR_RBM_NOTNATIVERES:
 			// Restore
@@ -289,6 +288,20 @@ namespace NativeResolution{
 			__asm jmp [JmpBackAddress];
 		}
 	}
+
+	namespace RepositionBriefing {
+		// Detour variables
+		constexpr unsigned long DetourSize = 6;
+		static unsigned long JmpFromAddress = 0;
+		static unsigned long JmpBackAddress = JmpFromAddress + DetourSize;
+
+		__declspec(naked) void Implementation()
+		{
+			__asm sub ecx, [ControlPanelMarginLeft];
+			__asm mov dword ptr ds:[esi + 0x10c], ecx;
+			__asm jmp [JmpBackAddress];
+		}
+	}
 }
 
 NativeResolutionPatch::NativeResolutionPatch()
@@ -309,6 +322,9 @@ NativeResolutionPatch::NativeResolutionPatch()
 	GamefieldPresetWidthAddress = 0;
 	GamefieldPresetHeightAddress = 0;
 
+	GamefieldHeightReducingAddress = 0;
+	GamefieldHeightRestorationAddress = 0;
+
 	MovieWidthAddress = 0;
 	MovieHeightAddress = 0;
 
@@ -318,7 +334,7 @@ NativeResolutionPatch::NativeResolutionPatch()
 	RedesignFrameDetourAddress = 0;
 	RedesignFrameTeamIdMemoryAddress = 0;
 	RedesignFrameDrawFunctionAddress = 0;
-
+	RepositionBriefingDetourAddress = 0;
 }
 
 NativeResolutionPatch::~NativeResolutionPatch()
@@ -340,6 +356,8 @@ bool NativeResolutionPatch::Validate()
 		!ScreenResizeHeightAddress ||
 		!GamefieldPresetWidthAddress ||
 		!GamefieldPresetHeightAddress ||
+		!GamefieldHeightReducingAddress ||
+		!GamefieldHeightRestorationAddress ||
 		!MovieWidthAddress ||
 		!MovieHeightAddress ||
 		!RepositionBottomMenuDetourAddress ||
@@ -347,7 +365,8 @@ bool NativeResolutionPatch::Validate()
 		!RenameSettingsFunctionAddress ||
 		!RedesignFrameDetourAddress ||
 		!RedesignFrameTeamIdMemoryAddress ||
-		!RedesignFrameDrawFunctionAddress)
+		!RedesignFrameDrawFunctionAddress ||
+		!RepositionBriefingDetourAddress)
 		return false;
 
 	return true;
@@ -360,6 +379,8 @@ bool NativeResolutionPatch::Apply()
 
 	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	GetLogger()->Informational("Resolution %ix%i\n", screenWidth, screenHeight);
 
 	if (screenWidth < 1280 || screenHeight < 720) // Don't patch; user should use 800x600/1024x768
 		return true;
@@ -426,6 +447,13 @@ bool NativeResolutionPatch::Apply()
 	if (!MemoryWriter::Write(GamefieldPresetHeightAddress, buffer, sizeof(int)))
 		return false;
 
+	unsigned char nopGamefieldResizeArray[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+	if (!MemoryWriter::Write(GamefieldHeightReducingAddress, nopGamefieldResizeArray, 6))
+		return false;
+
+	if (!MemoryWriter::Write(GamefieldHeightRestorationAddress, nopGamefieldResizeArray, 5))
+		return false;
+
 	// The movie resolution patch does NOT scale the movie
 	// Don't use native resolution until menu renders at native resolution (if)
 
@@ -442,7 +470,7 @@ bool NativeResolutionPatch::Apply()
 		return false;
 
 	// Patch variables
-	NativeResolution::RepositionBottomMenu::MarginLeft = (screenWidth - 1280) / 2;
+	NativeResolution::ControlPanelMarginLeft = (screenWidth - 1280) / 2;
 
 	NativeResolution::RedesignFrame::Width = screenWidth;
 	NativeResolution::RedesignFrame::Height = screenHeight;
@@ -464,6 +492,11 @@ bool NativeResolutionPatch::Apply()
 	NativeResolution::RedesignFrame::TeamIdMemoryAddress = RedesignFrameTeamIdMemoryAddress;
 	NativeResolution::RedesignFrame::DrawFunctionAddress = RedesignFrameDrawFunctionAddress;
 	if (!Detour::Create(NativeResolution::RedesignFrame::JmpFromAddress, NativeResolution::RedesignFrame::DetourSize, (unsigned long)NativeResolution::RedesignFrame::Implementation))
+		return false;
+
+	NativeResolution::RepositionBriefing::JmpFromAddress = RepositionBriefingDetourAddress;
+	NativeResolution::RepositionBriefing::JmpBackAddress = NativeResolution::RepositionBriefing::JmpFromAddress + NativeResolution::RepositionBriefing::DetourSize;
+	if (!Detour::Create(NativeResolution::RepositionBriefing::JmpFromAddress, NativeResolution::RepositionBriefing::DetourSize, (unsigned long)NativeResolution::RepositionBriefing::Implementation))
 		return false;
 
 	return true;

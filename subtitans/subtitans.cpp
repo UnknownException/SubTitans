@@ -27,7 +27,7 @@ extern "C" void __stdcall InitializeLibrary(unsigned long gameVersion)
 		case Shared::ST_GAMEVERSION_STEAM:
 			g_GamePatcher = new SteamPatcher();
 			GetLogger()->Informational("Version: Steam (1.0)\n");
-			GetLogger()->Warning("Consider updating to 1.1\n");
+			GetLogger()->Warning("DEPRECATED!!! Consider updating to 1.1\n");
 			break;
 		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
 			g_GamePatcher = new SteamPatchedPatcher();
@@ -70,6 +70,9 @@ extern "C" void __stdcall ReleaseLibrary()
 
 	if (g_GamePatcher)
 		delete g_GamePatcher;
+
+	if (g_Logger)
+		delete g_Logger;
 }
 
 BOOLEAN __stdcall DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved)

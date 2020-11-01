@@ -25,6 +25,8 @@ void GOGPatcher::Configure()
 	nativeResolutionPatch->ScreenResizeHeightAddress = 0x0056D7FF; // 0x0056F03F;
 	nativeResolutionPatch->GamefieldPresetWidthAddress = 0x0056B1CC; //0x0056CA0C;
 	nativeResolutionPatch->GamefieldPresetHeightAddress = 0x0056B1D6; //0x0056CA16;
+	nativeResolutionPatch->GamefieldHeightReducingAddress = 0x004F7057;
+	nativeResolutionPatch->GamefieldHeightRestorationAddress = 0x004FB487;
 	nativeResolutionPatch->MovieWidthAddress = 0x00570515; // 0x00571D55;
 	nativeResolutionPatch->MovieHeightAddress = 0x0057051C; // 0x00571D5C;
 	nativeResolutionPatch->RepositionBottomMenuDetourAddress = 0x004F6814; // 0x004F8084;
@@ -33,6 +35,7 @@ void GOGPatcher::Configure()
 	nativeResolutionPatch->RedesignFrameDetourAddress = 0x00543032; // 0x00544872;
 	nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080874E; // 0x0080911E;
 	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738; //0x0040372E;
+	nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F6AB2;
 	_patches.push_back(nativeResolutionPatch);
 
 	auto sleepWellPatch = new SleepWellPatch();

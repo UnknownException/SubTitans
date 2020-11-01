@@ -151,6 +151,8 @@ void SteamPatcher::Configure()
 	nativeResolutionPatch->ScreenResizeHeightAddress = 0x0056F03F;
 	nativeResolutionPatch->GamefieldPresetWidthAddress = 0x0056CA0C;
 	nativeResolutionPatch->GamefieldPresetHeightAddress = 0x0056CA16;
+	nativeResolutionPatch->GamefieldHeightReducingAddress = 0x004F88C7;
+	nativeResolutionPatch->GamefieldHeightRestorationAddress = 0x004FCCF7;
 	nativeResolutionPatch->MovieWidthAddress = 0x00571D55;
 	nativeResolutionPatch->MovieHeightAddress = 0x00571D5C;
 	nativeResolutionPatch->RepositionBottomMenuDetourAddress = 0x004F8084;
@@ -159,6 +161,7 @@ void SteamPatcher::Configure()
 	nativeResolutionPatch->RedesignFrameDetourAddress = 0x00544872;
 	nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080911E;
 	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x0040372E;
+	nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F8322;
 	_patches.push_back(nativeResolutionPatch);
 
 	auto highDPIPatch = new HighDPIPatch();
