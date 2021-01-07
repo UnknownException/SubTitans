@@ -6,6 +6,7 @@
 #include "highdpipatch.h"
 #include "sleepwellpatch.h"
 #include "disabledrawstackingpatch.h"
+#include "movieheapcorruptionpatch.h"
 #include "steampatcher.h"
 
 namespace Steam{
@@ -181,4 +182,36 @@ void SteamPatcher::Configure()
 	auto disableDrawStackingPatch = new DisableDrawStackingPatch();
 	disableDrawStackingPatch->Address = 0x006B7293;
 	_patches.push_back(disableDrawStackingPatch);
+
+	auto movieHeapCorruptionPatch = new MovieHeapCorruptionPatch();
+	movieHeapCorruptionPatch->AllocatedMemoryOffset = 0x008572D0;
+	movieHeapCorruptionPatch->StructurePatches[0] = 0x006D6BD3 + 3;
+	movieHeapCorruptionPatch->StructurePatches[1] = 0x006D6C60 + 1;
+	movieHeapCorruptionPatch->StructurePatches[2] = 0x006D6CBC + 1;
+	movieHeapCorruptionPatch->StructurePatches[3] = 0x006D6CC1 + 1;
+	movieHeapCorruptionPatch->StructurePatches[4] = 0x006D6CD1 + 2;
+	movieHeapCorruptionPatch->StructurePatches[5] = 0x006D6CDD + 2;
+	movieHeapCorruptionPatch->StructurePatches[6] = 0x006D6CE3 + 1;
+	movieHeapCorruptionPatch->StructurePatches[7] = 0x006D6CE8 + 1;
+	movieHeapCorruptionPatch->StructurePatches[8] = 0x006D6CF3 + 2;
+	movieHeapCorruptionPatch->StructurePatches[9] = 0x006D6CFF + 2;
+	movieHeapCorruptionPatch->StructurePatches[10] = 0x006D6D05 + 2;
+	movieHeapCorruptionPatch->StructurePatches[11] = 0x006D6D15 + 2;
+	movieHeapCorruptionPatch->StructurePatches[12] = 0x006D6D23 + 2;
+	movieHeapCorruptionPatch->StructurePatches[13] = 0x006D6D29 + 3;
+	movieHeapCorruptionPatch->StructurePatches[14] = 0x006D6D34 + 1;
+	movieHeapCorruptionPatch->StructurePatches[15] = 0x006D6D39 + 3;
+	movieHeapCorruptionPatch->StructurePatches[16] = 0x006D6D40 + 1;
+	movieHeapCorruptionPatch->StructurePatches[17] = 0x006D6D64 + 1;
+	movieHeapCorruptionPatch->StructurePatches[18] = 0x006D6D6E + 2;
+	movieHeapCorruptionPatch->StructurePatches[19] = 0x006D6D88 + 1;
+	movieHeapCorruptionPatch->StructurePatches[20] = 0x006D6D92 + 1;
+	movieHeapCorruptionPatch->StructurePatches[21] = 0x006D6D97 + 2;
+	movieHeapCorruptionPatch->StructurePatches[22] = 0x006D6DCD + 1;
+	movieHeapCorruptionPatch->StructurePatches[23] = 0x006D6DDB + 2;
+	movieHeapCorruptionPatch->StructurePatches[24] = 0x006D6DE7 + 2;
+	movieHeapCorruptionPatch->StructurePatches[25] = 0x006D6DF1 + 2;
+	movieHeapCorruptionPatch->StructurePatches[26] = 0x006D6E8E + 1;
+	movieHeapCorruptionPatch->DetourAddress = 0x006D6C4C;
+	_patches.push_back(movieHeapCorruptionPatch);
 }

@@ -29,6 +29,9 @@
     <ClCompile Include="gogpatcher.cpp">
       <Filter>patcher</Filter>
     </ClCompile>
+    <ClCompile Include="movieheapcorruptionpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patcher.h">
@@ -61,6 +64,9 @@
     <ClInclude Include="subtitans.h" />
     <ClInclude Include="steampatchedpatcher.h">
       <Filter>patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="movieheapcorruptionpatch.h">
+      <Filter>patches</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

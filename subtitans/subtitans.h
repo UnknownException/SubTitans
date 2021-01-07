@@ -3,8 +3,6 @@
 #include <Windows.h>
 #include <windowsx.h>
 #include <cmath>
-#include <cstdint>
-#include <vector>
 
 #pragma comment(lib, "winmm.lib")
 
