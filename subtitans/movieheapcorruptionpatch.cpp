@@ -54,11 +54,11 @@ namespace MovieHeapCorruption {
 		__asm popfd;
 		__asm popad;
 
-		__asm mov ecx, [NewAllocatedMemoryAddress]
-		__asm mov dword ptr ss:[ebp - 0x10], ecx
+		__asm mov ecx, [NewAllocatedMemoryAddress];
+		__asm mov dword ptr ss:[ebp - 0x10], ecx;
 
 		// Restore code
-		__asm mov ecx, 0x12
+		__asm mov ecx, 0x12;
 
 		__asm jmp[JmpBackAddress];
 	}
