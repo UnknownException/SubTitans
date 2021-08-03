@@ -18,6 +18,7 @@ Logger* GetLogger()
 }
 
 static Patcher* g_GamePatcher = nullptr;
+static UINT g_TimerResolution = 0;
 
 #pragma comment(linker, "/EXPORT:InitializeLibrary=_InitializeLibrary@4")
 extern "C" void __stdcall InitializeLibrary(unsigned long gameVersion)
@@ -61,12 +62,24 @@ extern "C" void __stdcall InitializeLibrary(unsigned long gameVersion)
 		GetLogger()->Critical("Failed to apply patches\n");
 		ExitProcess(-1);
 	}
+
+	TIMECAPS timeCaps;
+	if (timeGetDevCaps(&timeCaps, sizeof(TIMECAPS)) != TIMERR_NOERROR)
+		GetLogger()->Error("Failed to get timer device resolution\n");
+	else
+		g_TimerResolution = min(max(timeCaps.wPeriodMin, 1), timeCaps.wPeriodMax);
+
+	if (g_TimerResolution != 0)
+		timeBeginPeriod(g_TimerResolution);
 }
 
 #pragma comment(linker, "/EXPORT:ReleaseLibrary=_ReleaseLibrary@0")
 extern "C" void __stdcall ReleaseLibrary()
 {
 	GetLogger()->Informational("Shutting down\n");
+
+	if (g_TimerResolution != 0)
+		timeEndPeriod(g_TimerResolution);
 
 	if (g_GamePatcher)
 		delete g_GamePatcher;
