@@ -22,7 +22,7 @@ namespace MovieHeapCorruption {
 		unsigned long newAddress = (unsigned long)NewAllocatedMemoryAddress;
 		newAddress += addition;
 
-		MemoryWriter::Write(address, (unsigned char*)&newAddress, sizeof(int));
+		MemoryWriter::Write(address, (unsigned char*)&newAddress, sizeof(int), false);
 	}
 
 	// Functions specific variables

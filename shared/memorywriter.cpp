@@ -29,15 +29,23 @@ namespace MemoryWriter {
 		return false;
 	}
 
-	bool Write(unsigned long address, unsigned char* bytes, SIZE_T length)
+	bool Write(unsigned long address, unsigned char* bytes, SIZE_T length, bool enforceNoIntersecting)
 	{
 		// Prevent intersecting detours/overwrites
+		bool addressesIntersect = false;
 		for (auto it = _reservedAddressSpaces.begin(); it != _reservedAddressSpaces.end(); ++it)
 		{
-			if(CheckIfAddressesIntersect(address, length, it->address, it->length))
-				return false;
+			if (CheckIfAddressesIntersect(address, length, it->address, it->length))
+			{
+				addressesIntersect = true;
+				break;
+			}
 		}
-		_reservedAddressSpaces.push_back(_reservedAddressSpace(address, length));
+
+		if (!addressesIntersect)
+			_reservedAddressSpaces.push_back(_reservedAddressSpace(address, length));
+		else if (addressesIntersect && enforceNoIntersecting)
+			return false;
 
 		HANDLE currentProcess = GetCurrentProcess();
 		unsigned long* addressPointer = (unsigned long*)address;

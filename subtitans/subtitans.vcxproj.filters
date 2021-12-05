@@ -32,6 +32,9 @@
     <ClCompile Include="movieheapcorruptionpatch.cpp">
       <Filter>patches</Filter>
     </ClCompile>
+    <ClCompile Include="scrollpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patcher.h">
@@ -66,6 +69,9 @@
       <Filter>patcher</Filter>
     </ClInclude>
     <ClInclude Include="movieheapcorruptionpatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="scrollpatch.h">
       <Filter>patches</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "sleepwellpatch.h"
 #include "disabledrawstackingpatch.h"
 #include "movieheapcorruptionpatch.h"
+#include "scrollpatch.h"
 #include "steampatchedpatcher.h"
 
 SteamPatchedPatcher::SteamPatchedPatcher()
@@ -98,4 +99,9 @@ void SteamPatchedPatcher::Configure()
 	movieHeapCorruptionPatch->StructurePatches[26] = 0x006D5BDE + 1;
 	movieHeapCorruptionPatch->DetourAddress = 0x006D599C;
 	_patches.push_back(movieHeapCorruptionPatch);
+
+	auto scrollPatch = new ScrollPatch();
+	scrollPatch->UpdateRateAddress = 0x004AB083 + 2;
+	scrollPatch->DetourAddress = 0x004AB0EF;
+	_patches.push_back(scrollPatch);
 }

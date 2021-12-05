@@ -25,16 +25,16 @@ extern "C" void __stdcall InitializeLibrary(unsigned long gameVersion)
 {
 	switch (gameVersion)
 	{
-		case Shared::ST_GAMEVERSION_STEAM:
+		case Shared::ST_GAMEVERSION_RETAIL_UNPATCHED:
 			g_GamePatcher = new SteamPatcher();
-			GetLogger()->Informational("Version: Steam (1.0)\n");
+			GetLogger()->Informational("Version: Retail (1.0)\n");
 			GetLogger()->Warning("DEPRECATED!!! Consider updating to 1.1\n");
 			break;
-		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
+		case Shared::ST_GAMEVERSION_RETAIL_PATCHED:
 			g_GamePatcher = new SteamPatchedPatcher();
-			GetLogger()->Informational("Version: Steam/Retail (1.1)\n");
+			GetLogger()->Informational("Version: Retail (1.1)\n");
 			break;			
-		case Shared::ST_GAMEVERSION_GOG:
+		case Shared::ST_GAMEVERSION_GOG_MODIFIED:
 			g_GamePatcher = new GOGPatcher();
 			GetLogger()->Informational("Version: GOG (1.1)\n");
 			break;
