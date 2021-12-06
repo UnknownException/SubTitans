@@ -21,13 +21,13 @@ namespace ScrollSpeed {
 		__asm fmul dword ptr ds:[edx * 0x04 + SpeedLevels];
 
 		__asm popfd;
-		__asm jmp[JmpBackAddress];
+		__asm jmp [JmpBackAddress];
 
 	UNEXPECTED_RANGE:
 		__asm fmul dword ptr ds:[edx * 0x04 + 0x7AC584]; // original code
 
 		__asm popfd;
-		__asm jmp[JmpBackAddress];
+		__asm jmp [JmpBackAddress];
 	}
 }
 

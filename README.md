@@ -2,7 +2,7 @@
 Unofficial Submarine Titans patch
 
 **Requirements**
-* Windows 10 (Windows 7 works but isn't actively tested)
+* Windows 10
 * Supports Steam/Retail v1.0, Retail v1.1 and GOG v1.1
 
 **Features**
@@ -11,7 +11,8 @@ Unofficial Submarine Titans patch
 * Fixes alt-tab crashes (Steam; not required for GOG)
 * Fixes various internal errors (Steam; not required for GOG)
 * Performance boost (Steam; not required for GOG)
-* Windows 7 color fix (Steam; not required for GOG) - not actively tested
+* Improved scrolling (Requires v1.1)
+* Windows 7 color fix (Steam; not required for GOG) - deprecated
 
 **Instructions**
 1. Copy & paste d3drm.dll and subtitans.dll in your Submarine Titans folder.
