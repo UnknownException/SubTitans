@@ -4,6 +4,8 @@
 #include "highdpipatch.h"
 #include "sleepwellpatch.h"
 #include "disabledrawstackingpatch.h"
+#include "movieheapcorruptionpatch.h"
+#include "scrollpatch.h"
 #include "steampatchedpatcher.h"
 
 SteamPatchedPatcher::SteamPatchedPatcher()
@@ -20,49 +22,86 @@ SteamPatchedPatcher::~SteamPatchedPatcher()
 void SteamPatchedPatcher::Configure()
 {
 	auto windowedModePatch = new WindowedModePatch();
-	windowedModePatch->FlagAddress1 = 0x006B99AF; // 0x006BAC5F;
-	windowedModePatch->FlagAddress2 = 0x006B9BF6; // 0x006BAEA6;
-	windowedModePatch->RestoreDisplayModeAddress = 0x006B9B76; // 0x006BAE26
+	windowedModePatch->FlagAddress1 = 0x006B99AF;
+	windowedModePatch->FlagAddress2 = 0x006B9BF6;
+	windowedModePatch->RestoreDisplayModeAddress = 0x006B9B76;
 	_patches.push_back(windowedModePatch);
 
 	auto nativeResolutionPatch = new NativeResolutionPatch();
-	nativeResolutionPatch->GuiRescalerAddress = 0x004F19E4; // 0x004F3254;
-	nativeResolutionPatch->QueueScreenAddress = 0x004F845B; //0x004F9CCB;
-	nativeResolutionPatch->ScreenInitialResizeWidthAddress = 0x005307EB; //0x0053202B;
-	nativeResolutionPatch->ScreenInitialResizeHeightAddress = 0x005307F2; // 0x00532032;
-	nativeResolutionPatch->ScreenResizeWidthCompareAddress = 0x0056D78A; // 0x0056EFCA;
-	nativeResolutionPatch->ScreenResizeWidthAddress = 0x0056D7F5; // 0x0056F035;
-	nativeResolutionPatch->ScreenResizeHeightAddress = 0x0056D7FF; // 0x0056F03F;
-	nativeResolutionPatch->GamefieldPresetWidthAddress = 0x0056B1CC; //0x0056CA0C;
-	nativeResolutionPatch->GamefieldPresetHeightAddress = 0x0056B1D6; //0x0056CA16;
+	nativeResolutionPatch->GuiRescalerAddress = 0x004F19E4;
+	nativeResolutionPatch->QueueScreenAddress = 0x004F845B;
+	nativeResolutionPatch->ScreenInitialResizeWidthAddress = 0x005307EB;
+	nativeResolutionPatch->ScreenInitialResizeHeightAddress = 0x005307F2;
+	nativeResolutionPatch->ScreenResizeWidthCompareAddress = 0x0056D78A;
+	nativeResolutionPatch->ScreenResizeWidthAddress = 0x0056D7F5;
+	nativeResolutionPatch->ScreenResizeHeightAddress = 0x0056D7FF;
+	nativeResolutionPatch->GamefieldPresetWidthAddress = 0x0056B1CC;
+	nativeResolutionPatch->GamefieldPresetHeightAddress = 0x0056B1D6;
 	nativeResolutionPatch->GamefieldHeightReducingAddress = 0x004F7057;
 	nativeResolutionPatch->GamefieldHeightRestorationAddress = 0x004FB487;
-	nativeResolutionPatch->MovieWidthAddress = 0x00570515; // 0x00571D55;
-	nativeResolutionPatch->MovieHeightAddress = 0x0057051C; // 0x00571D5C;
-	nativeResolutionPatch->RepositionBottomMenuDetourAddress = 0x004F6814; // 0x004F8084;
-	nativeResolutionPatch->RenameSettingsDetourAddress = 0x0052F190; // 0x005309D0;
-	nativeResolutionPatch->RenameSettingsFunctionAddress = 0x00711B70; // 0x00712E20;
-	nativeResolutionPatch->RedesignFrameDetourAddress = 0x00543032; // 0x00544872;
-	nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080874E; // 0x0080911E;
-	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738; //0x0040372E;
+	nativeResolutionPatch->MovieWidthAddress = 0x00570515;
+	nativeResolutionPatch->MovieHeightAddress = 0x0057051C;
+	nativeResolutionPatch->RepositionBottomMenuDetourAddress = 0x004F6814;
+	nativeResolutionPatch->RenameSettingsDetourAddress = 0x0052F190;
+	nativeResolutionPatch->RenameSettingsFunctionAddress = 0x00711B70;
+	nativeResolutionPatch->RedesignFrameDetourAddress = 0x00543032;
+	nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080874E;
+	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738;
 	nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F6AB2;
 	_patches.push_back(nativeResolutionPatch);
 
 	auto highDPIPatch = new HighDPIPatch();
-	highDPIPatch->RetrieveCursorFromWindowsMessageDetourAddress = 0x006E5009; // 0x006E62B9;
-	highDPIPatch->IgnoreDInputMovementDetourAddress = 0x0071B6CC; // 0x0071C9C0;
-	highDPIPatch->OverrideWindowSizeDetourAddress = 0x006B9C3E; // 0x006BAEEE;
-	highDPIPatch->MouseExclusiveFlagAddress = 0x0071B32F; // 0x0071C5E4;
-	highDPIPatch->CheckIfValidResolutionAddress = 0x0056D848; // 0x0056F088;
+	highDPIPatch->RetrieveCursorFromWindowsMessageDetourAddress = 0x006E5009;
+	highDPIPatch->IgnoreDInputMovementDetourAddress = 0x0071B6CC;
+	highDPIPatch->OverrideWindowSizeDetourAddress = 0x006B9C3E;
+	highDPIPatch->MouseExclusiveFlagAddress = 0x0071B32F;
+	highDPIPatch->CheckIfValidResolutionAddress = 0x0056D848;
 	_patches.push_back(highDPIPatch);
 
 	auto sleepWellPatch = new SleepWellPatch();
-	sleepWellPatch->DetourAddress = 0x006E5064; // 0x006E6314;
-	sleepWellPatch->FrameLimitMemoryAddress = 0x00807654; // 0x00808024;
-	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x006E508B; // 0x006E633B;
+	sleepWellPatch->DetourAddress = 0x006E5064;
+	sleepWellPatch->FrameLimitMemoryAddress = 0x00807654;
+	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x006E508B;
 	_patches.push_back(sleepWellPatch);
 
 	auto disableDrawStackingPatch = new DisableDrawStackingPatch();
-	disableDrawStackingPatch->Address = 0x006B5FE3; //0x006B7293;
+	disableDrawStackingPatch->Address = 0x006B5FE3;
 	_patches.push_back(disableDrawStackingPatch);
+
+	auto movieHeapCorruptionPatch = new MovieHeapCorruptionPatch();
+	movieHeapCorruptionPatch->AllocatedMemoryOffset = 0x00856900;
+	movieHeapCorruptionPatch->StructurePatches[0] = 0x006D5923 + 3;
+	movieHeapCorruptionPatch->StructurePatches[1] = 0x006D59B0 + 1;
+	movieHeapCorruptionPatch->StructurePatches[2] = 0x006D5A0C + 1;
+	movieHeapCorruptionPatch->StructurePatches[3] = 0x006D5A11 + 1;
+	movieHeapCorruptionPatch->StructurePatches[4] = 0x006D5A21 + 2;
+	movieHeapCorruptionPatch->StructurePatches[5] = 0x006D5A2D + 2;
+	movieHeapCorruptionPatch->StructurePatches[6] = 0x006D5A33 + 1;
+	movieHeapCorruptionPatch->StructurePatches[7] = 0x006D5A38 + 1;
+	movieHeapCorruptionPatch->StructurePatches[8] = 0x006D5A43 + 2;
+	movieHeapCorruptionPatch->StructurePatches[9] = 0x006D5A4F + 2;
+	movieHeapCorruptionPatch->StructurePatches[10] = 0x006D5A55 + 2;
+	movieHeapCorruptionPatch->StructurePatches[11] = 0x006D5A65 + 2;
+	movieHeapCorruptionPatch->StructurePatches[12] = 0x006D5A73 + 2;
+	movieHeapCorruptionPatch->StructurePatches[13] = 0x006D5A79 + 3;
+	movieHeapCorruptionPatch->StructurePatches[14] = 0x006D5A84 + 1;
+	movieHeapCorruptionPatch->StructurePatches[15] = 0x006D5A89 + 3;
+	movieHeapCorruptionPatch->StructurePatches[16] = 0x006D5A90 + 1;
+	movieHeapCorruptionPatch->StructurePatches[17] = 0x006D5AB4 + 1;
+	movieHeapCorruptionPatch->StructurePatches[18] = 0x006D5ABE + 2;
+	movieHeapCorruptionPatch->StructurePatches[19] = 0x006D5AD8 + 1;
+	movieHeapCorruptionPatch->StructurePatches[20] = 0x006D5AE2 + 1;
+	movieHeapCorruptionPatch->StructurePatches[21] = 0x006D5AE7 + 2;
+	movieHeapCorruptionPatch->StructurePatches[22] = 0x006D5B1D + 1;
+	movieHeapCorruptionPatch->StructurePatches[23] = 0x006D5B2B + 2;
+	movieHeapCorruptionPatch->StructurePatches[24] = 0x006D5B37 + 2;
+	movieHeapCorruptionPatch->StructurePatches[25] = 0x006D5B41 + 2;
+	movieHeapCorruptionPatch->StructurePatches[26] = 0x006D5BDE + 1;
+	movieHeapCorruptionPatch->DetourAddress = 0x006D599C;
+	_patches.push_back(movieHeapCorruptionPatch);
+
+	auto scrollPatch = new ScrollPatch();
+	scrollPatch->UpdateRateAddress = 0x004AB083 + 2;
+	scrollPatch->DetourAddress = 0x004AB0EF;
+	_patches.push_back(scrollPatch);
 }

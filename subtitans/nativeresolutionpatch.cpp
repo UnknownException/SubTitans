@@ -12,8 +12,8 @@ namespace NativeResolution{
 
 		__declspec(naked) void Implementation()
 		{
-			__asm mov ecx, 0x0A 
-			__asm mov dword ptr ds:[esi + 0x60], edx
+			__asm mov ecx, 0x0A;
+			__asm mov dword ptr ds:[esi + 0x60], edx;
 
 			__asm mov edx, dword ptr ds:[esi + 0x8C]; 
 			__asm cmp edx, 0xF0;
@@ -281,7 +281,7 @@ namespace NativeResolution{
 			__asm push eax;
 			__asm push 1;
 			__asm push 0;
-			__asm push 0
+			__asm push 0;
 			__asm call [DrawFunctionAddress];
 			__asm add esp, 0x10;
 

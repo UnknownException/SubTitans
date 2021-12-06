@@ -80,8 +80,10 @@
     <ClCompile Include="disabledrawstackingpatch.cpp" />
     <ClCompile Include="gogpatcher.cpp" />
     <ClCompile Include="highdpipatch.cpp" />
+    <ClCompile Include="movieheapcorruptionpatch.cpp" />
     <ClCompile Include="nativeresolutionpatch.cpp" />
     <ClCompile Include="patcher.cpp" />
+    <ClCompile Include="scrollpatch.cpp" />
     <ClCompile Include="sleepwellpatch.cpp" />
     <ClCompile Include="steampatchedpatcher.cpp" />
     <ClCompile Include="steampatcher.cpp" />
@@ -92,9 +94,11 @@
     <ClInclude Include="disabledrawstackingpatch.h" />
     <ClInclude Include="gogpatcher.h" />
     <ClInclude Include="highdpipatch.h" />
+    <ClInclude Include="movieheapcorruptionpatch.h" />
     <ClInclude Include="nativeresolutionpatch.h" />
     <ClInclude Include="patch.h" />
     <ClInclude Include="patcher.h" />
+    <ClInclude Include="scrollpatch.h" />
     <ClInclude Include="sleepwellpatch.h" />
     <ClInclude Include="steampatchedpatcher.h" />
     <ClInclude Include="steampatcher.h" />

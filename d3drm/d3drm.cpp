@@ -86,9 +86,9 @@ uint32_t GetSubTitansVersion()
 	
 	switch (checkSum)
 	{
-		case Shared::ST_GAMEVERSION_STEAM:
-		case Shared::ST_GAMEVERSION_STEAM_PATCHED:
-		case Shared::ST_GAMEVERSION_GOG:
+		case Shared::ST_GAMEVERSION_RETAIL_UNPATCHED:
+		case Shared::ST_GAMEVERSION_RETAIL_PATCHED:
+		case Shared::ST_GAMEVERSION_GOG_MODIFIED:
 			return checkSum;
 		default:
 			return 0;

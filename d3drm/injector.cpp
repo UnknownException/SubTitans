@@ -125,7 +125,7 @@ namespace Injector {
 		GameVersion = gameVersion;
 		switch (GameVersion)
 		{
-			case Shared::ST_GAMEVERSION_STEAM:
+			case Shared::ST_GAMEVERSION_RETAIL_UNPATCHED:
 			{
 				LoadModule_JmpFrom = 0x00734B6E;
 				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
@@ -135,8 +135,8 @@ namespace Injector {
 
 				StartApplicationAddress = 0x00401FEB;
 			} break;
-			case Shared::ST_GAMEVERSION_STEAM_PATCHED:
-			case Shared::ST_GAMEVERSION_GOG:
+			case Shared::ST_GAMEVERSION_RETAIL_PATCHED:
+			case Shared::ST_GAMEVERSION_GOG_MODIFIED:
 			{
 				LoadModule_JmpFrom = 0x007337FE;
 				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
