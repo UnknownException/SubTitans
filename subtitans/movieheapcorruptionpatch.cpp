@@ -22,7 +22,12 @@ namespace MovieHeapCorruption {
 		unsigned long newAddress = (unsigned long)NewAllocatedMemoryAddress;
 		newAddress += addition;
 
-		MemoryWriter::Write(address, (unsigned char*)&newAddress, sizeof(int), false);
+		if (!MemoryWriter::Write(address, (unsigned char*)&newAddress, sizeof(int), false))
+		{
+			GetLogger()->Critical("Failed to update an offset for the movie player! (Address 0x%08x)\n", address);
+			MessageBox(NULL, L"Unexpected failure while patching the movie player", L"SubTitans", MB_ICONERROR);
+			ExitProcess(-1);
+		}
 	}
 
 	// Functions specific variables
@@ -60,7 +65,7 @@ namespace MovieHeapCorruption {
 		// Restore code
 		__asm mov ecx, 0x12;
 
-		__asm jmp[JmpBackAddress];
+		__asm jmp [JmpBackAddress];
 	}
 }
 
@@ -69,7 +74,8 @@ MovieHeapCorruptionPatch::MovieHeapCorruptionPatch()
 	GetLogger()->Informational("Constructing %s\n", __func__);
 
 	AllocatedMemoryOffset = 0;
-	memset(StructurePatches, 0, sizeof(StructurePatches));
+	StructurePointer = 0;
+	memset(StructureOffsets, 0, sizeof(StructureOffsets));
 	DetourAddress = 0;
 }
 
@@ -81,16 +87,16 @@ MovieHeapCorruptionPatch::~MovieHeapCorruptionPatch()
 bool MovieHeapCorruptionPatch::Validate()
 {
 	// Sanity check
-	if (sizeof(StructurePatches) - sizeof(unsigned long) != sizeof(MovieHeapCorruption::StructurePatches))
+	if (sizeof(StructureOffsets) != sizeof(MovieHeapCorruption::StructurePatches))
 		return false;
 
-	for (int i = 0; i < sizeof(StructurePatches) / sizeof(unsigned long); ++i)
+	for (int i = 0; i < sizeof(StructureOffsets) / sizeof(unsigned long); ++i)
 	{
-		if (StructurePatches[i] == 0)
+		if (StructureOffsets[i] == 0)
 			return false;
 	}
 
-	return AllocatedMemoryOffset != 0 && DetourAddress != 0;
+	return AllocatedMemoryOffset != 0 && StructurePointer != 0 && DetourAddress != 0;
 }
 
 bool MovieHeapCorruptionPatch::Apply()
@@ -98,13 +104,13 @@ bool MovieHeapCorruptionPatch::Apply()
 	GetLogger()->Informational("%s\n", __FUNCTION__);
 
 	unsigned char zeroArray[] = { 0x00, 0x00, 0x00, 0x00 };
-	if (!MemoryWriter::Write(StructurePatches[0], zeroArray, sizeof(zeroArray)))
+	if (!MemoryWriter::Write(StructurePointer, zeroArray, sizeof(zeroArray)))
 		return false;
 
 	MovieHeapCorruption::CurrentAllocatedMemoryAddress = AllocatedMemoryOffset;
 
 	// Skip address at first position
-	memcpy(MovieHeapCorruption::StructurePatches, &StructurePatches[1], sizeof(MovieHeapCorruption::StructurePatches));
+	memcpy(MovieHeapCorruption::StructurePatches, StructureOffsets, sizeof(MovieHeapCorruption::StructurePatches));
 
 	MovieHeapCorruption::JmpFromAddress = DetourAddress;
 	MovieHeapCorruption::JmpBackAddress = MovieHeapCorruption::JmpFromAddress + MovieHeapCorruption::DetourSize;

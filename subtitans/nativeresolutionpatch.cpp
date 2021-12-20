@@ -393,6 +393,7 @@ bool NativeResolutionPatch::Apply()
 
 	unsigned char buffer[4];
 
+	/*
 	// Create window Width (store @ 807100): Default 800
 	/* memcpy(buffer, &screenWidth, sizeof(int));
 	if (!MemoryWriter::Write(0x0056C6C5, buffer, sizeof(int)))
@@ -401,8 +402,9 @@ bool NativeResolutionPatch::Apply()
 	// Create window Height (store @ 807104): Default 600
 	memcpy(buffer, &screenHeight, sizeof(int));
 	if (!MemoryWriter::Write(0x0056C6CF, buffer, sizeof(int)))
-		return false; */
-
+		return false;
+	*/
+	
 	// GUI Rescaler?
 	memcpy(buffer, &screenWidth, sizeof(int));
 	if (!MemoryWriter::Write(GuiRescalerAddress, buffer, sizeof(int)))
