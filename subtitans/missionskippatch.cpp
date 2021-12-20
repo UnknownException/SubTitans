@@ -29,11 +29,23 @@ namespace MissionSkip {
 		if (_strupr_s(cheatActivatedMapName, sizeof(cheatActivatedMapName)) != 0)
 		{
 			GetLogger()->Error("Failed to convert map name to uppercase\n");
+			GetLogger()->Informational("Orbiton has been disabled\n");
 			return;
 		}
 
+		constexpr int missionValidationStringLength = sizeof(MissionValidationString) - 1;
+		constexpr int missionNumberStringLength = 3;
+		
+		// Validate if the string has the expected length
+		if(strlen(cheatActivatedMapName) < missionValidationStringLength + missionNumberStringLength)
+		{
+			GetLogger()->Warning("Current map has an unexpected length, are you sure this is a mission?\n");
+			GetLogger()->Informational("Orbiton has been disabled\n");
+			return;
+		}
+		
 		// Check if the current map is a mission
-		for (unsigned int i = 0; i < sizeof(MissionValidationString) - 1; ++i)
+		for (unsigned int i = 0; i < missionValidationStringLength; ++i)
 		{	
 			if (MissionValidationString[i] != cheatActivatedMapName[i])
 			{
@@ -42,15 +54,15 @@ namespace MissionSkip {
 				return;
 			}
 		}
-
-		char missionNumberAsString[4] = { 0x00, };
-		memcpy_s(missionNumberAsString, sizeof(missionNumberAsString), cheatActivatedMapName + strlen(MissionValidationString), 3);
+		
+		char missionNumberAsString[missionNumberStringLength + 1] = { 0x00, };
+		memcpy_s(missionNumberAsString, sizeof(missionNumberAsString), cheatActivatedMapName + missionValidationStringLength, missionNumberStringLength);
 		int missionNumber = atoi(missionNumberAsString + 1); // Skip team
 		if (missionNumber < 10)
 			missionNumber++;
 
-		sprintf_s(missionNumberAsString + 1, sizeof(missionNumberAsString), "%02d", missionNumber);
-		memcpy_s(cheatActivatedMapName + strlen(MissionValidationString), 3, missionNumberAsString, 3);
+		sprintf_s(missionNumberAsString + 1, sizeof(missionNumberAsString) - 1, "%02d", missionNumber);
+		memcpy_s(cheatActivatedMapName + missionValidationStringLength, missionNumberStringLength, missionNumberAsString, missionNumberStringLength);
 
 		memcpy_s(OrbitonMissionPathPattern + sizeof(OrbitonMissionPathPattern) - 4, 3, missionNumberAsString, 3);
 
