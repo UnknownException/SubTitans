@@ -23,19 +23,25 @@ namespace MissionSkip {
 	{
 		GetLogger()->Informational("Orbiton is activated for %s\n", CurrentMapNamePointer);
 
-		// Is mission map?
-		for (unsigned int i = 0; i < sizeof(MissionValidationString) - 1; ++i)
+		// Copy map name and convert to uppercase
+		char cheatActivatedMapName[32] = { 0x00, };
+		strncpy_s(cheatActivatedMapName, sizeof(cheatActivatedMapName), CurrentMapNamePointer, strlen(CurrentMapNamePointer));
+		if (_strupr_s(cheatActivatedMapName, sizeof(cheatActivatedMapName)) != 0)
 		{
-			if (MissionValidationString[i] != CurrentMapNamePointer[i])
+			GetLogger()->Error("Failed to convert map name to uppercase\n");
+			return;
+		}
+
+		// Check if the current map is a mission
+		for (unsigned int i = 0; i < sizeof(MissionValidationString) - 1; ++i)
+		{	
+			if (MissionValidationString[i] != cheatActivatedMapName[i])
 			{
 				GetLogger()->Warning("You're only allowed to skip mission maps!\n");
 				GetLogger()->Informational("Orbiton has been disabled\n");
 				return;
 			}
 		}
-
-		char cheatActivatedMapName[32] = { 0x00, };
-		strncpy_s(cheatActivatedMapName, sizeof(cheatActivatedMapName), CurrentMapNamePointer, strlen(CurrentMapNamePointer));
 
 		char missionNumberAsString[4] = { 0x00, };
 		memcpy_s(missionNumberAsString, sizeof(missionNumberAsString), cheatActivatedMapName + strlen(MissionValidationString), 3);
