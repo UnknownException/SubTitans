@@ -20,7 +20,7 @@ Unofficial Submarine Titans patch
 2. Open STConfig.exe and select 1280x1024.
 3. Run the game (through ST.exe or Steam).
 
-**Q&A** 
+**Q&A** \
 Q: How do I use the mission skip cheat? \
 A: Load the mission you want to skip and write 'orbiton' without quotes in the chatbox. \
 Exit to the menu and select a random campaign to start the next mission. \
