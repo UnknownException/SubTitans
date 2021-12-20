@@ -64,7 +64,7 @@ namespace MissionSkip {
 		sprintf_s(missionNumberAsString + 1, sizeof(missionNumberAsString) - 1, "%02d", missionNumber);
 		memcpy_s(cheatActivatedMapName + missionValidationStringLength, missionNumberStringLength, missionNumberAsString, missionNumberStringLength);
 
-		memcpy_s(OrbitonMissionPathPattern + sizeof(OrbitonMissionPathPattern) - 4, 3, missionNumberAsString, 3);
+		memcpy_s(OrbitonMissionPathPattern + (sizeof(OrbitonMissionPathPattern) - 1) - missionNumberStringLength, missionNumberStringLength, missionNumberAsString, missionNumberStringLength);
 
 		GetLogger()->Informational("Next mission will be forced to: %s\nExit to main menu and start a new campaign.\n", cheatActivatedMapName);
 
@@ -118,12 +118,18 @@ namespace MissionSkip {
 
 		__declspec(naked) void Implementation()
 		{
-			__asm cmp [OrbitonActivated], 0;
+			__asm cmp [OrbitonActivated], 0x00;
 			__asm je fullPathOrbitonDeactivated;
+
+			__asm cmp ecx, 0x01;
+			__asm je disableOrbitonForTutorial;
 
 			__asm push offset [OrbitonMissionPathPattern];
 			__asm jmp [JmpBackAddress];
 
+		disableOrbitonForTutorial:
+			__asm mov [OrbitonActivated], 0x00;
+		
 		fullPathOrbitonDeactivated:
 			__asm push offset [DefaultMissionPathPattern];
 			__asm jmp [JmpBackAddress];
@@ -139,11 +145,11 @@ namespace MissionSkip {
 
 		__declspec(naked) void Implementation()
 		{
-			__asm cmp [OrbitonActivated], 0;
+			__asm cmp [OrbitonActivated], 0x00;
 			__asm je fullPathOrbitonDeactivated;
 
 			__asm push offset [OrbitonMissionPathPattern + 0x02];
-			__asm mov [OrbitonActivated], 0;
+			__asm mov [OrbitonActivated], 0x00;
 			__asm jmp [JmpBackAddress];
 
 		fullPathOrbitonDeactivated:
