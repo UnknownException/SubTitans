@@ -7,6 +7,7 @@
 #include "movieheapcorruptionpatch.h"
 #include "scrollpatch.h"
 #include "steampatchedpatcher.h"
+#include "missionskippatch.h"
 
 SteamPatchedPatcher::SteamPatchedPatcher()
 {
@@ -70,33 +71,33 @@ void SteamPatchedPatcher::Configure()
 
 	auto movieHeapCorruptionPatch = new MovieHeapCorruptionPatch();
 	movieHeapCorruptionPatch->AllocatedMemoryOffset = 0x00856900;
-	movieHeapCorruptionPatch->StructurePatches[0] = 0x006D5923 + 3;
-	movieHeapCorruptionPatch->StructurePatches[1] = 0x006D59B0 + 1;
-	movieHeapCorruptionPatch->StructurePatches[2] = 0x006D5A0C + 1;
-	movieHeapCorruptionPatch->StructurePatches[3] = 0x006D5A11 + 1;
-	movieHeapCorruptionPatch->StructurePatches[4] = 0x006D5A21 + 2;
-	movieHeapCorruptionPatch->StructurePatches[5] = 0x006D5A2D + 2;
-	movieHeapCorruptionPatch->StructurePatches[6] = 0x006D5A33 + 1;
-	movieHeapCorruptionPatch->StructurePatches[7] = 0x006D5A38 + 1;
-	movieHeapCorruptionPatch->StructurePatches[8] = 0x006D5A43 + 2;
-	movieHeapCorruptionPatch->StructurePatches[9] = 0x006D5A4F + 2;
-	movieHeapCorruptionPatch->StructurePatches[10] = 0x006D5A55 + 2;
-	movieHeapCorruptionPatch->StructurePatches[11] = 0x006D5A65 + 2;
-	movieHeapCorruptionPatch->StructurePatches[12] = 0x006D5A73 + 2;
-	movieHeapCorruptionPatch->StructurePatches[13] = 0x006D5A79 + 3;
-	movieHeapCorruptionPatch->StructurePatches[14] = 0x006D5A84 + 1;
-	movieHeapCorruptionPatch->StructurePatches[15] = 0x006D5A89 + 3;
-	movieHeapCorruptionPatch->StructurePatches[16] = 0x006D5A90 + 1;
-	movieHeapCorruptionPatch->StructurePatches[17] = 0x006D5AB4 + 1;
-	movieHeapCorruptionPatch->StructurePatches[18] = 0x006D5ABE + 2;
-	movieHeapCorruptionPatch->StructurePatches[19] = 0x006D5AD8 + 1;
-	movieHeapCorruptionPatch->StructurePatches[20] = 0x006D5AE2 + 1;
-	movieHeapCorruptionPatch->StructurePatches[21] = 0x006D5AE7 + 2;
-	movieHeapCorruptionPatch->StructurePatches[22] = 0x006D5B1D + 1;
-	movieHeapCorruptionPatch->StructurePatches[23] = 0x006D5B2B + 2;
-	movieHeapCorruptionPatch->StructurePatches[24] = 0x006D5B37 + 2;
-	movieHeapCorruptionPatch->StructurePatches[25] = 0x006D5B41 + 2;
-	movieHeapCorruptionPatch->StructurePatches[26] = 0x006D5BDE + 1;
+	movieHeapCorruptionPatch->StructurePointer = 0x006D5923 + 3;
+	movieHeapCorruptionPatch->StructureOffsets[0] = 0x006D59B0 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[1] = 0x006D5A0C + 1;
+	movieHeapCorruptionPatch->StructureOffsets[2] = 0x006D5A11 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[3] = 0x006D5A21 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[4] = 0x006D5A2D + 2;
+	movieHeapCorruptionPatch->StructureOffsets[5] = 0x006D5A33 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[6] = 0x006D5A38 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[7] = 0x006D5A43 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[8] = 0x006D5A4F + 2;
+	movieHeapCorruptionPatch->StructureOffsets[9] = 0x006D5A55 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[10] = 0x006D5A65 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[11] = 0x006D5A73 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[12] = 0x006D5A79 + 3;
+	movieHeapCorruptionPatch->StructureOffsets[13] = 0x006D5A84 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[14] = 0x006D5A89 + 3;
+	movieHeapCorruptionPatch->StructureOffsets[15] = 0x006D5A90 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[16] = 0x006D5AB4 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[17] = 0x006D5ABE + 2;
+	movieHeapCorruptionPatch->StructureOffsets[18] = 0x006D5AD8 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[19] = 0x006D5AE2 + 1;
+	movieHeapCorruptionPatch->StructureOffsets[20] = 0x006D5AE7 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[21] = 0x006D5B1D + 1;
+	movieHeapCorruptionPatch->StructureOffsets[22] = 0x006D5B2B + 2;
+	movieHeapCorruptionPatch->StructureOffsets[23] = 0x006D5B37 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[24] = 0x006D5B41 + 2;
+	movieHeapCorruptionPatch->StructureOffsets[25] = 0x006D5BDE + 1;
 	movieHeapCorruptionPatch->DetourAddress = 0x006D599C;
 	_patches.push_back(movieHeapCorruptionPatch);
 
@@ -104,4 +105,13 @@ void SteamPatchedPatcher::Configure()
 	scrollPatch->UpdateRateAddress = 0x004AB083 + 2;
 	scrollPatch->DetourAddress = 0x004AB0EF;
 	_patches.push_back(scrollPatch);
+
+	auto missionSkipPatch = new MissionSkipPatch();
+	missionSkipPatch->AddCheatCodeDetourAddress = 0x00522B66;
+	missionSkipPatch->AddCheatCodeAlternativeReturnAddress = 0x00522B85;
+	missionSkipPatch->FullMapPathDetourAddress = 0x00593442;
+	missionSkipPatch->RelativeMapPathDetourAddress = 0x00593476;
+	missionSkipPatch->CurrentMapNameVariable = 0x0080EF1E;
+	missionSkipPatch->CheatValidationFunctionAddress = 0x0072E6F0;
+	_patches.push_back(missionSkipPatch);
 }
