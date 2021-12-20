@@ -24,9 +24,9 @@ namespace NativeResolution{
 			__asm mov edx, dword ptr ds:[esi + 0x8C];
 			__asm cmp edx, 0xF0; // Only do this for 1280x1024 resolution modification
 			__asm jne ASM_NR_RBM_NOTNATIVERES;
-			__asm cmp ecx, 1 // Check if last (0x0B: Left TV panel) <-- Don't add default value if match
-			__asm jne ASM_NR_RBM_DONTOVERRIDEDEFAULT
-			__asm mov edx, 0x00
+			__asm cmp ecx, 0x01; // Check if last (0x0B: Left TV panel) <-- Don't add default value if match
+			__asm jne ASM_NR_RBM_DONTOVERRIDEDEFAULT;
+			__asm mov edx, 0x00;
 
 		ASM_NR_RBM_DONTOVERRIDEDEFAULT:
 			__asm add edx, [ControlPanelMarginLeft]; // Widescreen reposition value
@@ -36,7 +36,7 @@ namespace NativeResolution{
 			__asm mov ebx, dword ptr ds:[eax];
 			__asm add ebx, edx;
 			__asm mov dword ptr ds:[eax], ebx;
-			__asm add eax, 4;
+			__asm add eax, 0x04;
 			__asm dec ecx;
 			__asm jnz ASM_NR_RBM_LOOP;
 
@@ -298,7 +298,7 @@ namespace NativeResolution{
 		__declspec(naked) void Implementation()
 		{
 			__asm sub ecx, [ControlPanelMarginLeft];
-			__asm mov dword ptr ds:[esi + 0x10c], ecx;
+			__asm mov dword ptr ds:[esi + 0x10C], ecx;
 			__asm jmp [JmpBackAddress];
 		}
 	}
