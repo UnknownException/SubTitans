@@ -11,6 +11,7 @@ public:
 	const wchar_t* ErrorMessage() override;
 
 	unsigned long AllocatedMemoryOffset;
-	unsigned long StructurePatches[27];
+	unsigned long StructurePointer;
+	unsigned long StructureOffsets[26];
 	unsigned long DetourAddress;
 };
