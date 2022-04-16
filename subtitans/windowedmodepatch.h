@@ -8,7 +8,7 @@ public:
 
 	bool Validate() override;
 	bool Apply() override;
-	const wchar_t* ErrorMessage() override;
+	const wchar_t* ErrorMessage() override { return L"Failed to apply Windowed Mode patch"; }
 
 	unsigned long FlagAddress1;
 	unsigned long FlagAddress2;

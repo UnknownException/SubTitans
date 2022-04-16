@@ -9,7 +9,7 @@ Patcher::~Patcher()
 {
 	for (auto it = _patches.begin(); it != _patches.end(); ++it)
 	{
-		delete* it;
+		delete *it;
 	}
 }
 

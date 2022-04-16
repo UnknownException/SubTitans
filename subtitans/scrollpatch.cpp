@@ -6,25 +6,28 @@ namespace ScrollSpeed {
 	constexpr unsigned long DetourSize = 7;
 	static unsigned long JmpFromAddress = 0;
 	static unsigned long JmpBackAddress = 0;
-	
+	static unsigned long OriginalSpeedModifiers = 0;
+
 	// Function specific variables
 	const float SpeedMultiplier = 0.76f;
-	const float SpeedLevels[3] = { 4.5f * SpeedMultiplier, 3.0f * SpeedMultiplier, 1.5f * SpeedMultiplier };
-
+	const float SpeedModifiers[3] = { 4.5f * SpeedMultiplier, 3.0f * SpeedMultiplier, 1.5f * SpeedMultiplier };
 	__declspec(naked) void Implementation()
 	{
 		__asm pushfd; // store eflags previous cmp
-
+		
 		__asm cmp edx, 2;
 		__asm jg UNEXPECTED_RANGE;
 
-		__asm fmul dword ptr ds:[edx * 0x04 + SpeedLevels];
+		__asm fmul dword ptr ds:[edx * 0x04 + SpeedModifiers];
 
 		__asm popfd;
 		__asm jmp [JmpBackAddress];
 
 	UNEXPECTED_RANGE:
-		__asm fmul dword ptr ds:[edx * 0x04 + 0x7AC584]; // original code
+		__asm push eax;
+		__asm mov eax, [OriginalSpeedModifiers];
+		__asm fmul dword ptr ds:[edx * 0x04 + eax];
+		__asm pop eax;
 
 		__asm popfd;
 		__asm jmp [JmpBackAddress];
@@ -37,6 +40,7 @@ ScrollPatch::ScrollPatch()
 
 	UpdateRateAddress = 0;
 	DetourAddress = 0;
+	OriginalSpeedModifiersAddress = 0;
 }
 
 ScrollPatch::~ScrollPatch()
@@ -46,7 +50,7 @@ ScrollPatch::~ScrollPatch()
 
 bool ScrollPatch::Validate()
 {
-	return UpdateRateAddress != 0 && DetourAddress != 0;
+	return UpdateRateAddress != 0 && DetourAddress != 0 && OriginalSpeedModifiersAddress != 0;
 }
 
 bool ScrollPatch::Apply()
@@ -64,10 +68,7 @@ bool ScrollPatch::Apply()
 	if (!Detour::Create(ScrollSpeed::JmpFromAddress, ScrollSpeed::DetourSize, (unsigned long)ScrollSpeed::Implementation))
 		return false;
 
-	return true;
-}
+	ScrollSpeed::OriginalSpeedModifiers = OriginalSpeedModifiersAddress;
 
-const wchar_t* ScrollPatch::ErrorMessage()
-{
-	return L"Failed to apply the scroll patch";
+	return true;
 }

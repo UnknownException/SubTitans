@@ -9,7 +9,7 @@ namespace Injector {
 	typedef void(__stdcall* SubTitansLibrary_InitializeLibrary)(unsigned long);
 	typedef void(__stdcall* SubTitansLibrary_ReleaseLibrary)();
 
-	void LoadModule()
+	void __stdcall LoadModule()
 	{
 		SubTitansLibrary = LoadLibrary(L"subtitans.dll");
 		if (!SubTitansLibrary)
@@ -37,7 +37,7 @@ namespace Injector {
 		__asm pushad;
 		__asm pushfd;
 
-		LoadModule();
+		__asm call [LoadModule];
 
 		__asm popfd;
 		__asm popad;
@@ -47,7 +47,7 @@ namespace Injector {
 		__asm jmp [LoadModule_JmpBack];
 	}
 
-	void UnloadModule()
+	void __stdcall UnloadModule()
 	{
 		if (!SubTitansLibrary)
 		{
@@ -74,7 +74,7 @@ namespace Injector {
 		__asm pushad;
 		__asm pushfd;
 
-		UnloadModule();
+		__asm call [UnloadModule];
 
 		__asm popfd;
 		__asm popad;

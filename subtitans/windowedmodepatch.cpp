@@ -1,6 +1,8 @@
 #include "subtitans.h"
 #include "windowedmodepatch.h"
 
+// Deprecated in favor of the OpenGL/Software rendering implementation (See DDrawReplacementPatch)
+
 WindowedModePatch::WindowedModePatch()
 {
 	GetLogger()->Informational("Constructing %s\n", __func__);
@@ -39,9 +41,4 @@ bool WindowedModePatch::Apply()
 		return false;
 
 	return true;
-}
-
-const wchar_t* WindowedModePatch::ErrorMessage()
-{
-	return L"Failed to apply Windowed Mode patch";
 }

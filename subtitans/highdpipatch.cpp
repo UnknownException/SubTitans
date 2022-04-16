@@ -1,8 +1,11 @@
 #include "subtitans.h"
+#include <windowsx.h>
 #include "highdpipatch.h"
 
-namespace HighDPI{
-	namespace RetrieveCursorFromWinMessage{
+// Deprecated in favor of the OpenGL/Software rendering implementation (See DDrawReplacementPatch)
+
+namespace HighDPI {
+	namespace RetrieveCursorFromWinMessage {
 		// Detour variables
 		constexpr unsigned long DetourSize = 18;
 		static unsigned long JmpFromAddress = 0;
@@ -40,7 +43,7 @@ namespace HighDPI{
 		}
 	}
 
-	namespace IgnoreDInputMovement{
+	namespace IgnoreDInputMovement {
 		constexpr unsigned long DetourSize = 7;
 		static unsigned long JmpFromAddress = 0;
 		static unsigned long JmpBackAddress = 0;
@@ -53,7 +56,7 @@ namespace HighDPI{
 		}
 	}
 
-	namespace OverrideWindowSize{
+	namespace OverrideWindowSize {
 		// Detour variables
 		constexpr unsigned long DetourSize = 5;
 		static unsigned long JmpFromAddress = 0;
@@ -133,8 +136,8 @@ bool HighDPIPatch::Apply()
 {
 	GetLogger()->Informational("%s\n", __FUNCTION__);
 
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int screenWidth = Global::MonitorWidth;
+	int screenHeight = Global::MonitorHeight;
 
 	if (screenWidth < 1280 || screenHeight < 720) // Don't patch; user should use 800x600/1024x768
 		return true;
@@ -150,10 +153,6 @@ bool HighDPIPatch::Apply()
 		return true;
 
 	GetLogger()->Informational("Enabling High DPI patch\n");
-
-#ifdef _DEBUG
-	MessageBox(NULL, L"Rescaling", L"High DPI", MB_ICONINFORMATION);
-#endif
 
 	HighDPI::OverrideWindowSize::Width = deviceMode.dmPelsWidth;
 	HighDPI::OverrideWindowSize::Height = deviceMode.dmPelsHeight;
@@ -188,9 +187,4 @@ bool HighDPIPatch::Apply()
 	delete[] nopArray;
 
 	return result;
-}
-
-const wchar_t* HighDPIPatch::ErrorMessage()
-{
-	return L"Failed to apply High DPI patch";
 }

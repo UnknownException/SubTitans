@@ -8,7 +8,7 @@ public:
 
 	bool Validate() override;
 	bool Apply() override;
-	const wchar_t* ErrorMessage() override;
+	const wchar_t* ErrorMessage() override { return L"Failed to apply Sleep Well patch"; }
 
 	unsigned long DetourAddress;
 	unsigned long FrameLimitMemoryAddress;

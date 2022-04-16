@@ -1,7 +1,7 @@
 #include "subtitans.h"
 #include "sleepwellpatch.h"
 
-namespace SleepWell{
+namespace SleepWell {
 	// Detour variables
 	constexpr unsigned long DetourSize = 5;
 	static unsigned long JmpFromAddress = 0;
@@ -12,16 +12,13 @@ namespace SleepWell{
 	static unsigned long CurrentTime = timeGetTime();
 	static unsigned long PreviousTime = timeGetTime();
 	static unsigned long DeltaTime = 0;
-	static unsigned long FrameLimit = 1000 / 25;
+	static HANDLE* RenderEvent = nullptr;
 
-	__declspec(naked) void Implementation()
+#define FrameLimit *(unsigned long*)FrameLimitMemoryAddress
+	void __stdcall SleepHandler()
 	{
-		__asm pushad;
-		__asm pushfd;
-
-		__asm mov eax, [FrameLimitMemoryAddress];
-		__asm mov eax, [eax];
-		__asm mov [FrameLimit], eax;
+		if (RenderEvent)
+			SetEvent(*RenderEvent);
 
 		CurrentTime = timeGetTime();
 		DeltaTime = CurrentTime - PreviousTime;
@@ -35,11 +32,15 @@ namespace SleepWell{
 
 		// Try to prevent negative effect of sleep inaccuracy
 		PreviousTime += FrameLimit;
+	}
+#undef FrameLimit
 
-		__asm popfd;
-		__asm popad;
+	__declspec(naked) void Implementation()
+	{
+		// Previous instruction is an __stdcall, expect ecx, ebx and flags to be trashed
+		__asm call [SleepHandler];
 
-		// Restore
+		// Restore original code
 		__asm mov eax, dword ptr ds:[esi + 0x20];
 		__asm test eax, eax;
 
@@ -81,10 +82,7 @@ bool SleepWellPatch::Apply()
 	if (!MemoryWriter::Write(DisableOriginalLimiterSleepAddress, removeOriginalSleepCall, sizeof(removeOriginalSleepCall)))
 		return false;
 
-	return true;
-}
+	SleepWell::RenderEvent = &Global::RenderEvent;
 
-const wchar_t* SleepWellPatch::ErrorMessage()
-{
-	return L"Failed to apply Sleep Well patch";
+	return true;
 }

@@ -31,7 +31,7 @@ jobs:
           Rename-Item -Path README.md -NewName readme.txt
           Rename-Item -Path LICENSE -NewName license.txt
           $compress = @{
-            Path = "Release/*.dll", "readme.txt", "license.txt"
+            Path = "Release/*.dll", "readme.txt", "license.txt", "Release/*.ini"
             DestinationPath = "SubTitans.zip"
             Force = $True
           }

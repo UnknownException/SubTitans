@@ -3,8 +3,8 @@
 #include "sleepwellpatch.h"
 #include "movieheapcorruptionpatch.h"
 #include "scrollpatch.h"
-#include "gogpatcher.h"
 #include "missionskippatch.h"
+#include "gogpatcher.h"
 
 GOGPatcher::GOGPatcher()
 {
@@ -82,6 +82,7 @@ void GOGPatcher::Configure()
 	auto scrollPatch = new ScrollPatch();
 	scrollPatch->UpdateRateAddress = 0x004AB083 + 2;
 	scrollPatch->DetourAddress = 0x004AB0EF;
+	scrollPatch->OriginalSpeedModifiersAddress = 0x007AC584;
 	_patches.push_back(scrollPatch);
 
 	auto missionSkipPatch = new MissionSkipPatch();

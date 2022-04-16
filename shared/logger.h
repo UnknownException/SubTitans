@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
 #include <cstdarg>
+#include <mutex>
 
 class Logger {
 public:
-	Logger(std::string logFile);
+	Logger(std::string logFilePath);
 	virtual ~Logger();
 
 	void Clear();
@@ -16,8 +17,10 @@ public:
 	void Debug(const char* format, ...);
 	void Trace(const char* format, ...);
 
-protected:
+private:
 	char* _logBuffer;
-	std::string _logFile;
+	std::string _logFilePath;
 	void Log(const char* format, va_list arguments, const char* prefix);
+
+	std::mutex _mutex;
 };
