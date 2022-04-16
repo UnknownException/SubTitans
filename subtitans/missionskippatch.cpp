@@ -212,8 +212,3 @@ bool MissionSkipPatch::Apply()
 
 	return true;
 }
-
-const wchar_t* MissionSkipPatch::ErrorMessage()
-{
-	return L"Failed to apply the mission skip patch";
-}

@@ -15,38 +15,26 @@ namespace MemoryWriter {
 	};
 	static std::vector<_reservedAddressSpace> _reservedAddressSpaces;
 
-	bool CheckIfAddressesIntersect(unsigned long left, unsigned long leftSize, unsigned long right, unsigned long rightSize)
+	bool AddressIntersects(unsigned long left, unsigned long leftSize)
 	{
-		unsigned long leftEnd = left + leftSize;
-		unsigned long rightEnd = right + rightSize;
-		if (left >= right && left < rightEnd)
-			return true;
-		else if (leftEnd > right && leftEnd < rightEnd)
-			return true;
-		else if (left <= right && leftEnd >= rightEnd)
-			return true;
+		for (auto it = _reservedAddressSpaces.begin(); it != _reservedAddressSpaces.end(); ++it)
+		{
+			unsigned long leftEnd = left + leftSize;
+			unsigned long rightEnd = it->address + it->length;
+			if (left < rightEnd && leftEnd > it->address /* right */)
+				return true;
+		}
 
+		_reservedAddressSpaces.push_back(_reservedAddressSpace(left, leftSize));
 		return false;
 	}
 
 	bool Write(unsigned long address, unsigned char* bytes, SIZE_T length, bool enforceNoIntersecting)
 	{
 		// Prevent intersecting detours/overwrites
-		bool addressesIntersect = false;
-		for (auto it = _reservedAddressSpaces.begin(); it != _reservedAddressSpaces.end(); ++it)
-		{
-			if (CheckIfAddressesIntersect(address, length, it->address, it->length))
-			{
-				addressesIntersect = true;
-				break;
-			}
-		}
-
-		if (!addressesIntersect)
-			_reservedAddressSpaces.push_back(_reservedAddressSpace(address, length));
-		else if (addressesIntersect && enforceNoIntersecting)
+		if (enforceNoIntersecting && AddressIntersects(address, length))
 			return false;
-
+	
 		HANDLE currentProcess = GetCurrentProcess();
 		unsigned long* addressPointer = (unsigned long*)address;
 

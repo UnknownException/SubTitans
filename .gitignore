@@ -348,3 +348,13 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Submarine Titans
+*.dkd
+*.dkx
+*.bik
+*.vps
+*.avi
+*.dll
+*.exe
+*.rpt

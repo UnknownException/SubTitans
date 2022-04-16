@@ -32,7 +32,7 @@ namespace MovieHeapCorruption {
 
 	// Functions specific variables
 	static unsigned long StructurePatches[26];
-	void AllocateMemoryAndRedirectReferences()
+	void __stdcall AllocateMemoryAndRedirectReferences()
 	{
 		NewAllocatedMemoryAddress = CoTaskMemAlloc(0x11A * 4);
 		memset(NewAllocatedMemoryAddress, 0, 0x11A * 4);
@@ -54,7 +54,7 @@ namespace MovieHeapCorruption {
 		__asm pushad;
 		__asm pushfd;
 
-		AllocateMemoryAndRedirectReferences();
+		__asm call [AllocateMemoryAndRedirectReferences];
 
 		__asm popfd;
 		__asm popad;
@@ -118,9 +118,4 @@ bool MovieHeapCorruptionPatch::Apply()
 		return false;
 
 	return true;
-}
-
-const wchar_t* MovieHeapCorruptionPatch::ErrorMessage()
-{
-	return L"Failed to apply Movie Heap Corruption patch";
 }

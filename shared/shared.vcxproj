@@ -11,13 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="configuration.h" />
     <ClInclude Include="detour.h" />
+    <ClInclude Include="file.h" />
     <ClInclude Include="gameversion.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="memorywriter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="configuration.cpp" />
     <ClCompile Include="detour.cpp" />
+    <ClCompile Include="file.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="memorywriter.cpp" />
   </ItemGroup>

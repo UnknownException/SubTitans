@@ -1,6 +1,8 @@
 #include "subtitans.h"
 #include "disabledrawstackingpatch.h"
 
+// Deprecated in favor of the OpenGL/Software rendering implementation (See DDrawReplacementPatch)
+
 DisableDrawStackingPatch::DisableDrawStackingPatch()
 {
 	GetLogger()->Informational("Constructing %s\n", __func__);
@@ -29,9 +31,4 @@ bool DisableDrawStackingPatch::Apply()
 		return false;
 
 	return true;
-}
-
-const wchar_t* DisableDrawStackingPatch::ErrorMessage()
-{
-	return L"Failed to apply Disable Draw Stacking patch";
 }

@@ -9,10 +9,17 @@
       <Filter>memory</Filter>
     </ClInclude>
     <ClInclude Include="logger.h" />
+    <ClInclude Include="configuration.h" />
+    <ClInclude Include="file.h">
+      <Filter>io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="memory">
       <UniqueIdentifier>{9b895b6d-8336-44b3-9ef4-43a43db59e08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{ebff36a6-0f63-4b4e-a2f5-e31dbaddb77a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -23,5 +30,9 @@
       <Filter>memory</Filter>
     </ClCompile>
     <ClCompile Include="logger.cpp" />
+    <ClCompile Include="configuration.cpp" />
+    <ClCompile Include="file.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

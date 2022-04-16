@@ -1,12 +1,17 @@
 #include <fstream>
+#ifdef _DEBUG
+#include <Windows.h>
+#endif
 #include "logger.h"
+
+//#define _TRACELOG
 
 constexpr int LogBufferSize = 1024;
 
-Logger::Logger(std::string logFile)
+Logger::Logger(std::string logFilePath)
 {
 	_logBuffer = new char[LogBufferSize];
-	_logFile = logFile;
+	_logFilePath = logFilePath;
 }
 
 Logger::~Logger()
@@ -16,8 +21,10 @@ Logger::~Logger()
 
 void Logger::Clear()
 {
-	std::ofstream fileStream(_logFile, std::ofstream::out);
+	_mutex.lock();
+	std::ofstream fileStream(_logFilePath, std::ofstream::out);
 	fileStream.close();
+	_mutex.unlock();
 }
 
 void Logger::Critical(const char* format, ...)
@@ -74,10 +81,21 @@ void Logger::Trace(const char* format, ...)
 
 void Logger::Log(const char* format, va_list arguments, const char* prefix)
 {
+	_mutex.lock();
+
 	vsnprintf(_logBuffer, LogBufferSize, format, arguments);
 
-	std::ofstream fileStream(_logFile, std::ofstream::out | std::ofstream::app);
+#ifndef _TRACELOG
+	std::ofstream fileStream(_logFilePath, std::ofstream::out | std::ofstream::app);
 	fileStream.write(prefix, strlen(prefix));
 	fileStream.write(_logBuffer, strlen(_logBuffer));
 	fileStream.close();
+#endif
+
+#ifdef _DEBUG
+	std::string output = std::string(prefix) + std::string(_logBuffer);
+	OutputDebugStringA(output.c_str());
+#endif
+
+	_mutex.unlock();
 }

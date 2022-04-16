@@ -38,6 +38,57 @@
     <ClCompile Include="missionskippatch.cpp">
       <Filter>patches</Filter>
     </ClCompile>
+    <ClCompile Include="clipper.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="device.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="palette.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="surface.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="openglrenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="softwarerenderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ddrawreplacementpatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="mousedevice.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboarddevice.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="glew\src\glew.c">
+      <Filter>external\glew</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>external\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patcher.h">
@@ -80,6 +131,87 @@
     <ClInclude Include="missionskippatch.h">
       <Filter>patches</Filter>
     </ClInclude>
+    <ClInclude Include="iddraw4.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="iddrawsurface4.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="iddrawclipper.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="iddrawpalette.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="clipper.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="device.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="palette.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="surface.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="openglrenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="irenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="softwarerenderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="ddrawreplacementpatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="idinput7.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="idinputdevice7.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="mousedevice.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboarddevice.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="glew\include\GL\glew.h">
+      <Filter>external\glew</Filter>
+    </ClInclude>
+    <ClInclude Include="glew\include\GL\wglew.h">
+      <Filter>external\glew</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3_loader.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>external\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="patcher">
@@ -87,6 +219,21 @@
     </Filter>
     <Filter Include="patches">
       <UniqueIdentifier>{de28ff75-bb05-4d2f-a46c-e8e9928ad7a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{96b7acbf-c395-4eaf-9e76-233bef363367}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{e5c7e412-5885-47ed-835b-1c1e0f54b9d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{7339be0a-9b12-4ffe-9890-19a395845437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\glew">
+      <UniqueIdentifier>{af7b9feb-4c75-463d-a3d5-322996067dd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui">
+      <UniqueIdentifier>{7b3b4aa3-26da-4048-aee1-be945cf29d93}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
