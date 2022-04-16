@@ -1,5 +1,5 @@
 # SubTitans
-Unofficial Submarine Titans patch
+Unofficial Submarine Titans patch \
 ![GitHub all releases](https://img.shields.io/github/downloads/UnknownException/SubTitans/total)
 
 **Requirements**
@@ -37,7 +37,7 @@ Q: I've got a problem in-game with my mouse and/or keyboard. \
 A: Open SubTitans.ini and set CustomInput to false, this should revert the input handling changes. \
  \
 Q: I've got a problem with the OpenGL/Software renderer and want to use a custom DDraw wrapper. \
-A: Open SubTitans.ini and set Renderer to 1. \
+A: Open SubTitans.ini and set Renderer to 1.
 
 **Known bugs**
 * None (yet)

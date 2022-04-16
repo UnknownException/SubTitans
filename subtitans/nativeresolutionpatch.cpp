@@ -386,27 +386,7 @@ bool NativeResolutionPatch::Apply()
 	if (screenWidth < 1280 || screenHeight < 720) // Don't patch; user should use 800x600/1024x768
 		return true;
 
-	/*
-	if (screenWidth == 1366 && screenHeight == 768)
-	{
-		GetLogger()->Warning("1366x768 causes rendering issues; trying 1280x768\n");
-		screenWidth = 1280;
-	}
-	*/
-
 	unsigned char buffer[4];
-
-	/*
-	// Create window Width (store @ 807100): Default 800
-	memcpy(buffer, &screenWidth, sizeof(int));
-	if (!MemoryWriter::Write(0x0056AE7F + 0x06, buffer, sizeof(int)))
-		return false;
-
-	// Create window Height (store @ 807104): Default 600
-	memcpy(buffer, &screenHeight, sizeof(int));
-	if (!MemoryWriter::Write(0x0056AE89 + 0x06, buffer, sizeof(int)))
-		return false;
-	*/
 
 	// GUI Rescaler?
 	memcpy(buffer, &screenWidth, sizeof(int));
@@ -460,7 +440,6 @@ bool NativeResolutionPatch::Apply()
 		return false;
 
 	// The movie resolution patch does NOT scale the movie
-	// Don't use native resolution until menu renders at native resolution (if)	
 	// Movie resolution patch (Width)
 	constexpr int movieWidth = 800;
 	memcpy(buffer, &movieWidth, sizeof(int));
