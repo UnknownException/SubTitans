@@ -83,6 +83,12 @@ namespace WindowRegisterClassDetour {
 			case WM_MOUSEMOVE:
 				Global::MouseInformation.x = (int16_t)(lParam & 0xFFFF);
 				Global::MouseInformation.y = (int16_t)(lParam >> 16);			
+
+				// (BUG) Workaround for cursor issue when moving to 0, 0. 
+				// Requires further investigation.
+				if (Global::MouseInformation.x == 0 && Global::MouseInformation.y == 0)
+					Global::MouseInformation.y = 1;
+
 				break;
 			case WM_MOUSEWHEEL:
 				Global::MouseInformation.z += (int16_t)(wParam >> 16);
