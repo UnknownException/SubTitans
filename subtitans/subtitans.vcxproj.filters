@@ -89,6 +89,9 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>external\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="demopatcher.cpp">
+      <Filter>patcher</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patcher.h">
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="demopatcher.h">
+      <Filter>patcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

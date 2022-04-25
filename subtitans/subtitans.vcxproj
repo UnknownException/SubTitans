@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ddrawreplacementpatch.cpp" />
+    <ClCompile Include="demopatcher.cpp" />
     <ClCompile Include="disabledrawstackingpatch.cpp" />
     <ClCompile Include="glew\src\glew.c" />
     <ClCompile Include="gogpatcher.cpp" />
@@ -114,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ddrawreplacementpatch.h" />
+    <ClInclude Include="demopatcher.h" />
     <ClInclude Include="glew\include\GL\glew.h" />
     <ClInclude Include="glew\include\GL\wglew.h" />
     <ClInclude Include="idinputdevice7.h" />

@@ -22,12 +22,9 @@ SteamPatchedPatcher::~SteamPatchedPatcher()
 
 void SteamPatchedPatcher::Configure()
 {
-	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
+	bool isWindows7 = IsWindows7OrGreater() && !IsWindows8OrGreater();
 
-	// Force Windows 7 to use an alternative renderer to prevent DirectDraw palette glitching
-	// If you want to use a DirectDraw wrapper on Windows 7 then remove/comment this line
-	renderingBackend = (renderingBackend == Global::RenderingBackend::DirectDraw 
-		&& !IsWindows8OrGreater() && IsWindows7OrGreater()) ? Global::RenderingBackend::Automatic : renderingBackend;
+	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
 
 	// Always enable the improved frames per second limiter when DirectDraw isn't used
 	// The alternative renderers are listening to the events published by SleepWellPatch
@@ -90,7 +87,8 @@ void SteamPatchedPatcher::Configure()
 		ddrawReplacementPatch->WindowRegisterClassDetourAddress = 0x0056AEC7;
 		ddrawReplacementPatch->WindowCreateDetourAddress = 0x0056AF13;
 		ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = 0x0071B6CC;
-		ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software;
+		ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software 
+			|| (isWindows7 && renderingBackend == Global::RenderingBackend::Automatic); // Prefer software rendering on windows 7
 		ddrawReplacementPatch->DInputReplacement = GetConfiguration()->GetBoolean(L"FEATURE", L"CustomInput", true);
 		_patches.push_back(ddrawReplacementPatch);
 

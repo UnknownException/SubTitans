@@ -3,13 +3,13 @@ Unofficial Submarine Titans patch \
 ![GitHub all releases](https://img.shields.io/github/downloads/UnknownException/SubTitans/total)
 
 **Requirements**
-* Windows 10 or Windows 11
+* Windows 7, Windows 10, Windows 11 or Wine (+ Ubuntu)
 * Supports Steam/Retail v1.0, Retail v1.1 and GOG v1.1
 
 **Features**
 * Support for any resolution in-game (All; tested up to 3840x2160)
-* OpenGL and Software rendering replacement for DirectDraw to improve compatibility and performance (Retail v1.1)
-* DInput replacement (Retail v1.1)
+* OpenGL and Software rendering replacement for DirectDraw to improve compatibility and performance (Retail/GOG v1.1)
+* DInput replacement (Retail/GOG v1.1)
 * Improved scrolling (Retail/GOG v1.1)
 * Added mission skip cheat (Retail/GOG v1.1; workaround for progression bugs)
 * Fixes various internal errors (All)
