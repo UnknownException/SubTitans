@@ -37,4 +37,6 @@ public:
 	unsigned long RedesignFrameTeamIdMemoryAddress;
 	unsigned long RedesignFrameDrawFunctionAddress;
 	unsigned long RepositionBriefingDetourAddress;
+
+	unsigned long CurrentScreenWidthAddress;
 };

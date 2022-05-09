@@ -109,6 +109,7 @@ void SteamPatcher::Configure()
 	nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080911E;
 	nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x0040372E;
 	nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F8322;
+	nativeResolutionPatch->CurrentScreenWidthAddress = 0x00807100;
 	_patches.push_back(nativeResolutionPatch);
 
 	auto highDPIPatch = new HighDPIPatch();

@@ -81,6 +81,7 @@ void GOGPatcher::Configure()
 		nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080874E;
 		nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738;
 		nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F6AB2;
+		nativeResolutionPatch->CurrentScreenWidthAddress = 0x00806730;
 		_patches.push_back(nativeResolutionPatch);
 	}
 

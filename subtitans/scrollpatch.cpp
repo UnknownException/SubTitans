@@ -15,7 +15,7 @@ namespace ScrollSpeed {
 	{
 		__asm pushfd; // store eflags previous cmp
 		
-		__asm cmp edx, 2;
+		__asm cmp edx, 0x02;
 		__asm jg UNEXPECTED_RANGE;
 
 		__asm fmul dword ptr ds:[edx * 0x04 + SpeedModifiers];
