@@ -5,8 +5,14 @@
 #include "glew/include/GL/glew.h"
 #include "glew/include/GL/wglew.h"
 
+#ifdef _DEBUG
+#define _IMGUI_ENABLED
+#endif
+
+#ifdef _IMGUI_ENABLED
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
+#endif
 
 OpenGLRenderer::OpenGLRenderer()
 {
@@ -345,6 +351,7 @@ uint32_t CreateShader()
 
 void InitImGui()
 {
+#ifdef _IMGUI_ENABLED
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -354,6 +361,7 @@ void InitImGui()
 	auto io = &ImGui::GetIO();
 	io->DisplaySize.x = static_cast<float>(Global::MonitorWidth);
 	io->DisplaySize.y = static_cast<float>(Global::MonitorHeight);
+#endif
 }
 
 void OpenGLRenderer::Run()
@@ -478,6 +486,7 @@ void OpenGLRenderer::Run()
 		}
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+#ifdef _IMGUI_ENABLED
 		if (Global::ImGuiEnabled)
 		{
 			ImGui_ImplOpenGL3_NewFrame();
@@ -487,7 +496,8 @@ void OpenGLRenderer::Run()
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
-		
+#endif
+	
 		// Swap
 		SwapBuffers(deviceContext);
 
@@ -498,8 +508,10 @@ void OpenGLRenderer::Run()
 	// Cleanup
 	GetLogger()->Informational("%s %s\n", __FUNCTION__, "is cleaning up");
 
+#ifdef _IMGUI_ENABLED
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui::DestroyContext();
+#endif
 	
 	glDeleteBuffers(1, &vertexBufferId);
 	glDeleteVertexArrays(1, &vboId);
