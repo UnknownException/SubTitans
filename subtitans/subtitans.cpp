@@ -1,5 +1,4 @@
 #include "subtitans.h"
-#include <VersionHelpers.h>
 #include "steampatcher.h"
 #include "steampatchedpatcher.h"
 #include "gogpatcher.h"

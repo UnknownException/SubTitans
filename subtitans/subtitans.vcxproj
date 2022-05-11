@@ -83,10 +83,8 @@
   <ItemGroup>
     <ClCompile Include="ddrawreplacementpatch.cpp" />
     <ClCompile Include="demopatcher.cpp" />
-    <ClCompile Include="disabledrawstackingpatch.cpp" />
     <ClCompile Include="glew\src\glew.c" />
     <ClCompile Include="gogpatcher.cpp" />
-    <ClCompile Include="highdpipatch.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -111,7 +109,6 @@
     <ClCompile Include="device.cpp" />
     <ClCompile Include="palette.cpp" />
     <ClCompile Include="surface.cpp" />
-    <ClCompile Include="windowedmodepatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ddrawreplacementpatch.h" />
@@ -128,9 +125,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="input.h" />
-    <ClInclude Include="disabledrawstackingpatch.h" />
     <ClInclude Include="gogpatcher.h" />
-    <ClInclude Include="highdpipatch.h" />
     <ClInclude Include="idinput7.h" />
     <ClInclude Include="keyboarddevice.h" />
     <ClInclude Include="mousedevice.h" />
@@ -155,7 +150,6 @@
     <ClInclude Include="device.h" />
     <ClInclude Include="palette.h" />
     <ClInclude Include="surface.h" />
-    <ClInclude Include="windowedmodepatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

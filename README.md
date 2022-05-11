@@ -7,18 +7,18 @@ Unofficial Submarine Titans patch \
 * Supports Steam/Retail v1.0, Retail v1.1 and GOG v1.1
 
 **Features**
-* Support for any resolution in-game (All; tested up to 3840x2160)
-* OpenGL and Software rendering replacement for DirectDraw to improve compatibility and performance (Retail/GOG v1.1)
-* DInput replacement (Retail/GOG v1.1)
-* Improved scrolling (Retail/GOG v1.1)
+* Support for any resolution in-game (tested up to 3840x2160)
+* OpenGL and Software rendering replacement for DirectDraw to improve compatibility and performance
+* DInput replacement
+* Improved scrolling
 * Added mission skip cheat (Retail/GOG v1.1; workaround for progression bugs)
-* Fixes various internal errors (All)
-* Support for display scaling (Retail v1.0 & Retail v1.1)
-* Fixes alt-tab crashes (Retail v1.0 & Retail v1.1)
-* Windows 7 palette color fix (Retail v1.1)
+* Fixes various internal errors
+* Fixes alt-tab crashes
+* Support for display scaling
+* Windows 7 palette color fix
 
 **Instructions**
-1. Copy & paste d3drm.dll and subtitans.dll in your Submarine Titans folder.
+1. Copy & paste d3drm.dll, subtitans.dll and subtitans.ini into your Submarine Titans folder.
 2. Open STConfig.exe and select 1280x1024.
 3. Run the game.
 
@@ -38,9 +38,12 @@ A: Open SubTitans.ini and set CustomInput to false, this should revert the input
  \
 Q: I've got a problem with the OpenGL/Software renderer and want to use a custom DDraw wrapper. \
 A: Open SubTitans.ini and set Renderer to 1.
+ \
+Q: The Submarine Titans demo crashes with or without this patch. \
+A: The support for the demo version of Submarine Titans is bare minimum. Please don't report issues regarding the demo, it will be ignored.
 
 **Known bugs**
-* None (yet)
+* Regions next to the in-game command panel aren't selectable/clickable.
 
 **Uninstall**
-* Deleting SubTitans.dll will disable the ingame patches.
+* Deleting SubTitans.dll will disable the in-game patches.

@@ -1,11 +1,7 @@
 #include "subtitans.h"
-#include <VersionHelpers.h>
-#include "windowedmodepatch.h"
 #include "nativeresolutionpatch.h"
-#include "highdpipatch.h"
 #include "sleepwellpatch.h"
 #include "ddrawreplacementpatch.h"
-#include "disabledrawstackingpatch.h"
 #include "movieheapcorruptionpatch.h"
 #include "scrollpatch.h"
 #include "missionskippatch.h"
@@ -41,33 +37,6 @@ void SteamPatchedPatcher::Configure()
 	if (renderingBackend == Global::RenderingBackend::DirectDraw)
 	{
 		GetLogger()->Informational("Using DirectDraw\n");
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"DpiScaling", true))
-		{
-			auto highDPIPatch = new HighDPIPatch();
-			highDPIPatch->RetrieveCursorFromWindowsMessageDetourAddress = 0x006E5009;
-			highDPIPatch->IgnoreDInputMovementDetourAddress = 0x0071B6CC;
-			highDPIPatch->OverrideWindowSizeDetourAddress = 0x006B9C3E;
-			highDPIPatch->MouseExclusiveFlagAddress = 0x0071B32F;
-			highDPIPatch->CheckIfValidResolutionAddress = 0x0056D848;
-			_patches.push_back(highDPIPatch);
-		}
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"AltTab", true))
-		{
-			auto windowedModePatch = new WindowedModePatch();
-			windowedModePatch->FlagAddress1 = 0x006B99AF;
-			windowedModePatch->FlagAddress2 = 0x006B9BF6;
-			windowedModePatch->RestoreDisplayModeAddress = 0x006B9B76;
-			_patches.push_back(windowedModePatch);
-		}
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"DisableDrawStacking", true))
-		{
-			auto disableDrawStackingPatch = new DisableDrawStackingPatch();
-			disableDrawStackingPatch->Address = 0x006B5FE3;
-			_patches.push_back(disableDrawStackingPatch);
-		}
 	}
 	else
 	{
