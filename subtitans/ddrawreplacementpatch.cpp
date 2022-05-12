@@ -158,7 +158,10 @@ namespace WindowRegisterClassDetour {
 					default:
 						Global::KeyboardInformation.keyPressed[KeyTranslationTable[wParam & 0xFF]] = Global::KeyPressedFlag;
 						break;
-				} break;	
+				} break;
+			case WM_ACTIVATEAPP:
+				memset(&Global::KeyboardInformation, 0, sizeof(Global::_KeyboardInformation));
+				break;
 			default:
 				break;
 		}
