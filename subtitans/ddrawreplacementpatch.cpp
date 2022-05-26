@@ -160,8 +160,23 @@ namespace WindowRegisterClassDetour {
 						break;
 				} break;
 			case WM_ACTIVATEAPP:
+			{
 				memset(&Global::KeyboardInformation, 0, sizeof(Global::_KeyboardInformation));
-				break;
+				
+				if (wParam == 1)
+				{
+					RECT rect;
+					rect.left = 0;
+					rect.top = 0;
+					rect.right = Global::InternalWidth;
+					rect.bottom = Global::InternalHeight;
+					ClipCursor(&rect);
+				}
+				else
+				{
+					ClipCursor(nullptr); // Free the cursor
+				}
+			} break;
 			default:
 				break;
 		}
