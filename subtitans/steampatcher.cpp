@@ -97,7 +97,6 @@ void SteamPatcher::Configure()
 		_patches.push_back(sleepWellPatch);
 	}
 
-	// TODO ADDR
 	if (renderingBackend == Global::RenderingBackend::DirectDraw)
 	{
 		GetLogger()->Informational("Using DirectDraw\n");

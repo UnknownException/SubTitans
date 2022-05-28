@@ -37,7 +37,7 @@ Q: I've got a problem in-game with my mouse and/or keyboard. \
 A: Open SubTitans.ini and set CustomInput to false, this should revert the input handling changes. \
  \
 Q: I've got a problem with the OpenGL/Software renderer and want to use a custom DDraw wrapper. \
-A: Open SubTitans.ini and set Renderer to 1.
+A: Open SubTitans.ini and set Renderer to 1. \
  \
 Q: The Submarine Titans demo crashes with or without this patch. \
 A: The support for the demo version of Submarine Titans is bare minimum. Please don't report issues regarding the demo, it will be ignored.
