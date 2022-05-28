@@ -1,8 +1,8 @@
 #include "subtitans.h"
-#include <VersionHelpers.h>
 #include "steampatcher.h"
 #include "steampatchedpatcher.h"
 #include "gogpatcher.h"
+#include "demopatcher.h"
 
 static Logger* g_Logger = nullptr;
 Logger* GetLogger()
@@ -81,7 +81,9 @@ const char* GetApplicationLanguage()
 		uint32_t checksum = File::CalculateChecksum(STStringDll.c_str());
 		switch (checksum)
 		{
-			case Shared::ST_LANGUAGE_ENGLISH:
+			case Shared::ST_LANGUAGE_ENGLISH_UNPATCHED:
+			case Shared::ST_LANGUAGE_ENGLISH_PATCHED:
+			case Shared::ST_LANGUAGE_ENGLISH_DEMO:
 				return "English";
 			default:
 				return "Unknown language";
@@ -114,6 +116,10 @@ Patcher* CreateVersionSpecificGamePatcher(unsigned long gameVersion)
 			patcher = new GOGPatcher();
 			GetLogger()->Informational("GOG 1.1 - %s\n", GetApplicationLanguage());
 			break;
+		case Shared::ST_GAMEVERSION_DEMO:
+			patcher = new DemoPatcher();
+			GetLogger()->Informational("Demo - %s\n", GetApplicationLanguage());
+			break;
 		default:
 			GetLogger()->Informational("Unknown\n");
 			GetLogger()->Critical("Incompatible application\n");
@@ -129,20 +135,22 @@ void LogOperatingSystem()
 	GetLogger()->Informational("Operating System: ");
 
 	if (IsWindowsXPOrGreater() && !IsWindowsVistaOrGreater())
-		GetLogger()->Informational("Windows XP (unsupported)\n");
+		GetLogger()->Informational("Windows XP (unsupported)");
 	else if (IsWindowsVistaOrGreater() && !IsWindows7OrGreater())
-		GetLogger()->Informational("Windows Vista (unsupported)\n");
+		GetLogger()->Informational("Windows Vista (unsupported)");
 	else if (IsWindows7OrGreater() && !IsWindows8OrGreater())
-		GetLogger()->Informational("Windows 7 (supported)\n");
+		GetLogger()->Informational("Windows 7 (supported)");
 	// BUG: ST.exe has no manifest targeting Windows 8.1 or 10 so it will always report as Windows 8
 	else if (IsWindows8OrGreater())
-		GetLogger()->Informational("Windows 8 or newer (supported)\n");
+		GetLogger()->Informational("Windows 8 or newer (supported)");
 	else
-		GetLogger()->Informational("Unknown (unsupported)\n");
+		GetLogger()->Informational("Unknown (unsupported)");
 
 	HMODULE hNTDLL = GetModuleHandle(L"ntdll.dll");
 	if (hNTDLL && GetProcAddress(hNTDLL, "wine_get_version") != NULL)
-		GetLogger()->Informational("Running under Wine\n");
+		GetLogger()->Informational(" - Running under Wine (supported)");
+
+	GetLogger()->Informational("\n");
 }
 
 void LogHardwareInformation()

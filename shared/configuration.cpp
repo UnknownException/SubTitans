@@ -36,7 +36,12 @@ bool Configuration::GetBoolean(std::wstring category, std::wstring key, bool pla
 	WCHAR buffer[6];
 	GetPrivateProfileString(category.c_str(), key.c_str(), placeholder ? L"true" : L"false", buffer, sizeof(buffer) / 2, _configFilePath.c_str());
 
-	return _wcsicmp(L"true", buffer) == 0 ? true : false;
+	bool result = _wcsicmp(L"true", buffer) == 0;
+	result |= _wcsicmp(L"yes", buffer) == 0;
+	result |= _wcsicmp(L"on", buffer) == 0;
+	result |= _wcsicmp(L"1", buffer) == 0;
+
+	return result;
 }
 
 std::wstring Configuration::GetString(std::wstring category, std::wstring key, std::wstring placeholder)

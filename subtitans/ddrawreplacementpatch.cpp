@@ -83,6 +83,12 @@ namespace WindowRegisterClassDetour {
 			case WM_MOUSEMOVE:
 				Global::MouseInformation.x = (int16_t)(lParam & 0xFFFF);
 				Global::MouseInformation.y = (int16_t)(lParam >> 16);			
+
+				// (BUG) Workaround for cursor issue when moving to 0, 0. 
+				// Requires further investigation.
+				if (Global::MouseInformation.x == 0 && Global::MouseInformation.y == 0)
+					Global::MouseInformation.y = 1;
+
 				break;
 			case WM_MOUSEWHEEL:
 				Global::MouseInformation.z += (int16_t)(wParam >> 16);
@@ -152,7 +158,25 @@ namespace WindowRegisterClassDetour {
 					default:
 						Global::KeyboardInformation.keyPressed[KeyTranslationTable[wParam & 0xFF]] = Global::KeyPressedFlag;
 						break;
-				} break;	
+				} break;
+			case WM_ACTIVATEAPP:
+			{
+				memset(&Global::KeyboardInformation, 0, sizeof(Global::_KeyboardInformation));
+				
+				if (wParam == 1)
+				{
+					RECT rect;
+					rect.left = 0;
+					rect.top = 0;
+					rect.right = Global::InternalWidth;
+					rect.bottom = Global::InternalHeight;
+					ClipCursor(&rect);
+				}
+				else
+				{
+					ClipCursor(nullptr); // Free the cursor
+				}
+			} break;
 			default:
 				break;
 		}

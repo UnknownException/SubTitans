@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Windows.h>
+#include <VersionHelpers.h>
+
 #include <cmath>
 #include <vector>
 #include <string>

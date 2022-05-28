@@ -146,6 +146,16 @@ namespace Injector {
 
 				StartApplicationAddress = 0x00401FF5;
 			} break;
+			case Shared::ST_GAMEVERSION_DEMO:
+			{
+				LoadModule_JmpFrom = 0x0071A25E;
+				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
+
+				UnloadModule_JmpFrom = 0x0071A263;
+				UnloadModule_JmpBack = UnloadModule_JmpFrom + UnloadModule_DetourSize;
+
+				StartApplicationAddress = 0x00401FF0;
+			} break;
 			default:
 				return false;
 		}

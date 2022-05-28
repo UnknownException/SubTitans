@@ -1,11 +1,7 @@
 #include "subtitans.h"
-#include <VersionHelpers.h>
-#include "windowedmodepatch.h"
 #include "nativeresolutionpatch.h"
-#include "highdpipatch.h"
 #include "sleepwellpatch.h"
 #include "ddrawreplacementpatch.h"
-#include "disabledrawstackingpatch.h"
 #include "movieheapcorruptionpatch.h"
 #include "scrollpatch.h"
 #include "missionskippatch.h"
@@ -22,12 +18,9 @@ SteamPatchedPatcher::~SteamPatchedPatcher()
 
 void SteamPatchedPatcher::Configure()
 {
-	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
+	bool isWindows7 = IsWindows7OrGreater() && !IsWindows8OrGreater();
 
-	// Force Windows 7 to use an alternative renderer to prevent DirectDraw palette glitching
-	// If you want to use a DirectDraw wrapper on Windows 7 then remove/comment this line
-	renderingBackend = (renderingBackend == Global::RenderingBackend::DirectDraw 
-		&& !IsWindows8OrGreater() && IsWindows7OrGreater()) ? Global::RenderingBackend::Automatic : renderingBackend;
+	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
 
 	// Always enable the improved frames per second limiter when DirectDraw isn't used
 	// The alternative renderers are listening to the events published by SleepWellPatch
@@ -44,33 +37,6 @@ void SteamPatchedPatcher::Configure()
 	if (renderingBackend == Global::RenderingBackend::DirectDraw)
 	{
 		GetLogger()->Informational("Using DirectDraw\n");
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"DpiScaling", true))
-		{
-			auto highDPIPatch = new HighDPIPatch();
-			highDPIPatch->RetrieveCursorFromWindowsMessageDetourAddress = 0x006E5009;
-			highDPIPatch->IgnoreDInputMovementDetourAddress = 0x0071B6CC;
-			highDPIPatch->OverrideWindowSizeDetourAddress = 0x006B9C3E;
-			highDPIPatch->MouseExclusiveFlagAddress = 0x0071B32F;
-			highDPIPatch->CheckIfValidResolutionAddress = 0x0056D848;
-			_patches.push_back(highDPIPatch);
-		}
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"AltTab", true))
-		{
-			auto windowedModePatch = new WindowedModePatch();
-			windowedModePatch->FlagAddress1 = 0x006B99AF;
-			windowedModePatch->FlagAddress2 = 0x006B9BF6;
-			windowedModePatch->RestoreDisplayModeAddress = 0x006B9B76;
-			_patches.push_back(windowedModePatch);
-		}
-
-		if (GetConfiguration()->GetBoolean(L"DIRECTDRAW", L"DisableDrawStacking", true))
-		{
-			auto disableDrawStackingPatch = new DisableDrawStackingPatch();
-			disableDrawStackingPatch->Address = 0x006B5FE3;
-			_patches.push_back(disableDrawStackingPatch);
-		}
 	}
 	else
 	{
@@ -90,7 +56,8 @@ void SteamPatchedPatcher::Configure()
 		ddrawReplacementPatch->WindowRegisterClassDetourAddress = 0x0056AEC7;
 		ddrawReplacementPatch->WindowCreateDetourAddress = 0x0056AF13;
 		ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = 0x0071B6CC;
-		ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software;
+		ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software 
+			|| (isWindows7 && renderingBackend == Global::RenderingBackend::Automatic); // Prefer software rendering on windows 7
 		ddrawReplacementPatch->DInputReplacement = GetConfiguration()->GetBoolean(L"FEATURE", L"CustomInput", true);
 		_patches.push_back(ddrawReplacementPatch);
 
@@ -120,6 +87,7 @@ void SteamPatchedPatcher::Configure()
 		nativeResolutionPatch->RedesignFrameTeamIdMemoryAddress = 0x0080874E;
 		nativeResolutionPatch->RedesignFrameDrawFunctionAddress = 0x00403738;
 		nativeResolutionPatch->RepositionBriefingDetourAddress = 0x004F6AB2;
+		nativeResolutionPatch->CurrentScreenWidthAddress = 0x00806730;
 		_patches.push_back(nativeResolutionPatch);
 	}
 

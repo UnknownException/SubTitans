@@ -224,7 +224,7 @@ namespace NativeResolution{
 			FillRect(1280 - rightWidth, 1024-bottomHeight-rightBottomHeight, Width - rightWidth, Height - bottomHeight - rightBottomHeight, rightWidth, rightBottomHeight); // Bottom
 		}
 
-		unsigned long _teamIdMemoryPtr = 0;
+		static unsigned long _teamIdMemoryPtr = 0;
 		__declspec(naked) void Implementation()
 		{
 			__asm mov dword ptr ss:[ebp - 0x08], eax;
@@ -280,9 +280,9 @@ namespace NativeResolution{
 
 		ASM_NR_RF_RENDERFRAME:
 			__asm push eax;
-			__asm push 1;
-			__asm push 0;
-			__asm push 0;
+			__asm push 0x01;
+			__asm push 0x00;
+			__asm push 0x00;
 			__asm call [DrawFunctionAddress];
 			__asm add esp, 0x10;
 
@@ -295,10 +295,20 @@ namespace NativeResolution{
 		constexpr unsigned long DetourSize = 6;
 		static unsigned long JmpFromAddress = 0;
 		static unsigned long JmpBackAddress = JmpFromAddress + DetourSize;
+		static unsigned long CurrentScreenWidthAddress = 0;
 
 		__declspec(naked) void Implementation()
 		{
+			__asm pushfd;
+			__asm push eax;
+			__asm mov eax, [CurrentScreenWidthAddress];
+			__asm cmp dword ptr ds:[eax] , 0x500; // 1280
+			__asm pop eax;
+			__asm jle ASM_NR_RB_SKIPREPOSITION;
 			__asm sub ecx, [ControlPanelMarginLeft];
+			
+		ASM_NR_RB_SKIPREPOSITION:
+			__asm popfd;
 			__asm mov dword ptr ds:[esi + 0x10C], ecx;
 			__asm jmp [JmpBackAddress];
 		}
@@ -336,6 +346,8 @@ NativeResolutionPatch::NativeResolutionPatch()
 	RedesignFrameTeamIdMemoryAddress = 0;
 	RedesignFrameDrawFunctionAddress = 0;
 	RepositionBriefingDetourAddress = 0;
+
+	CurrentScreenWidthAddress = 0;
 }
 
 NativeResolutionPatch::~NativeResolutionPatch()
@@ -367,7 +379,8 @@ bool NativeResolutionPatch::Validate()
 		!RedesignFrameDetourAddress ||
 		!RedesignFrameTeamIdMemoryAddress ||
 		!RedesignFrameDrawFunctionAddress ||
-		!RepositionBriefingDetourAddress)
+		!RepositionBriefingDetourAddress ||
+		!CurrentScreenWidthAddress)
 		return false;
 
 	return true;
@@ -480,6 +493,7 @@ bool NativeResolutionPatch::Apply()
 
 	NativeResolution::RepositionBriefing::JmpFromAddress = RepositionBriefingDetourAddress;
 	NativeResolution::RepositionBriefing::JmpBackAddress = NativeResolution::RepositionBriefing::JmpFromAddress + NativeResolution::RepositionBriefing::DetourSize;
+	NativeResolution::RepositionBriefing::CurrentScreenWidthAddress = CurrentScreenWidthAddress;
 	if (!Detour::Create(NativeResolution::RepositionBriefing::JmpFromAddress, NativeResolution::RepositionBriefing::DetourSize, (unsigned long)NativeResolution::RepositionBriefing::Implementation))
 		return false;
 
