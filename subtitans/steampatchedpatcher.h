@@ -2,8 +2,10 @@
 #include "steampatcher.h"
 
 class SteamPatchedPatcher : public SteamPatcher {
+	uint32_t _baseOffset;
+
 public:
-	SteamPatchedPatcher();
+	SteamPatchedPatcher(uint32_t baseOffset);
 	virtual ~SteamPatchedPatcher();
 
 protected:

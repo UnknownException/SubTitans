@@ -336,9 +336,6 @@ NativeResolutionPatch::NativeResolutionPatch()
 	GamefieldHeightReducingAddress = 0;
 	GamefieldHeightRestorationAddress = 0;
 
-	MovieWidthAddress = 0;
-	MovieHeightAddress = 0;
-
 	RepositionBottomMenuDetourAddress = 0;
 	RenameSettingsDetourAddress = 0;
 	RenameSettingsFunctionAddress = 0;
@@ -371,8 +368,6 @@ bool NativeResolutionPatch::Validate()
 		!GamefieldPresetHeightAddress ||
 		!GamefieldHeightReducingAddress ||
 		!GamefieldHeightRestorationAddress ||
-		!MovieWidthAddress ||
-		!MovieHeightAddress ||
 		!RepositionBottomMenuDetourAddress ||
 		!RenameSettingsDetourAddress ||
 		!RenameSettingsFunctionAddress ||
@@ -450,19 +445,6 @@ bool NativeResolutionPatch::Apply()
 		return false;
 
 	if (!MemoryWriter::Write(GamefieldHeightRestorationAddress, nopGamefieldResizeArray, 5))
-		return false;
-
-	// The movie resolution patch does NOT scale the movie
-	// Movie resolution patch (Width)
-	constexpr int movieWidth = 800;
-	memcpy(buffer, &movieWidth, sizeof(int));
-	if (!MemoryWriter::Write(MovieWidthAddress, buffer, sizeof(int)))
-		return false;
-
-	// Movie resolution patch (Height)
-	constexpr int movieHeight = 600;
-	memcpy(buffer, &movieHeight, sizeof(int));
-	if (!MemoryWriter::Write(MovieHeightAddress, buffer, sizeof(int)))
 		return false;
 	
 	// Patch variables

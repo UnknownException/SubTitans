@@ -125,7 +125,27 @@ namespace Injector {
 		GameVersion = gameVersion;
 		switch (GameVersion)
 		{
-			case Shared::ST_GAMEVERSION_RETAIL_UNPATCHED:
+			case Shared::ST_GAMEVERSION_0_0_6:
+			{
+				LoadModule_JmpFrom = 0x005CE3CE;
+				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
+
+				UnloadModule_JmpFrom = 0x005CE3D3;
+				UnloadModule_JmpBack = UnloadModule_JmpFrom + UnloadModule_DetourSize;
+
+				StartApplicationAddress = 0x00401ACD;
+			} break;
+			case Shared::ST_GAMEVERSION_0_1_6:
+			{
+				LoadModule_JmpFrom = 0x0071A25E;
+				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
+
+				UnloadModule_JmpFrom = 0x0071A263;
+				UnloadModule_JmpBack = UnloadModule_JmpFrom + UnloadModule_DetourSize;
+
+				StartApplicationAddress = 0x00401FF0;
+			} break;
+			case Shared::ST_GAMEVERSION_1_0_0:
 			{
 				LoadModule_JmpFrom = 0x00734B6E;
 				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
@@ -135,8 +155,8 @@ namespace Injector {
 
 				StartApplicationAddress = 0x00401FEB;
 			} break;
-			case Shared::ST_GAMEVERSION_RETAIL_PATCHED:
-			case Shared::ST_GAMEVERSION_GOG_MODIFIED:
+			case Shared::ST_GAMEVERSION_1_1_0:
+			case Shared::ST_GAMEVERSION_1_1_0_GOG:
 			{
 				LoadModule_JmpFrom = 0x007337FE;
 				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
@@ -146,15 +166,20 @@ namespace Injector {
 
 				StartApplicationAddress = 0x00401FF5;
 			} break;
-			case Shared::ST_GAMEVERSION_DEMO:
+			case Shared::ST_GAMEVERSION_1_1_0_ASLR_DEP:
+			case Shared::ST_GAMEVERSION_1_1_0_GOG_ASLR_DEP:
 			{
-				LoadModule_JmpFrom = 0x0071A25E;
+				const unsigned int originalBaseAddress = Shared::IMAGE_BASE;
+				const unsigned int baseAddress = (unsigned int)GetModuleHandle(NULL);
+
+				LoadModule_JmpFrom = 0x007337FE - originalBaseAddress + baseAddress;
 				LoadModule_JmpBack = LoadModule_JmpFrom + LoadModule_DetourSize;
 
-				UnloadModule_JmpFrom = 0x0071A263;
+				UnloadModule_JmpFrom = 0x00733803 - originalBaseAddress + baseAddress;
 				UnloadModule_JmpBack = UnloadModule_JmpFrom + UnloadModule_DetourSize;
 
-				StartApplicationAddress = 0x00401FF0;
+				StartApplicationAddress = 0x00401FF5 - originalBaseAddress + baseAddress;
+
 			} break;
 			default:
 				return false;

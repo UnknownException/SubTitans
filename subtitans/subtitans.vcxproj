@@ -99,6 +99,8 @@
     <ClCompile Include="nativeresolutionpatch.cpp" />
     <ClCompile Include="openglrenderer.cpp" />
     <ClCompile Include="patcher.cpp" />
+    <ClCompile Include="pescalpel.cpp" />
+    <ClCompile Include="registrypatch.cpp" />
     <ClCompile Include="scrollpatch.cpp" />
     <ClCompile Include="sleepwellpatch.cpp" />
     <ClCompile Include="softwarerenderer.cpp" />
@@ -109,6 +111,7 @@
     <ClCompile Include="device.cpp" />
     <ClCompile Include="palette.cpp" />
     <ClCompile Include="surface.cpp" />
+    <ClCompile Include="techdemopatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ddrawreplacementpatch.h" />
@@ -140,6 +143,8 @@
     <ClInclude Include="openglrenderer.h" />
     <ClInclude Include="patch.h" />
     <ClInclude Include="patcher.h" />
+    <ClInclude Include="pescalpel.h" />
+    <ClInclude Include="registrypatch.h" />
     <ClInclude Include="scrollpatch.h" />
     <ClInclude Include="sleepwellpatch.h" />
     <ClInclude Include="softwarerenderer.h" />
@@ -150,6 +155,12 @@
     <ClInclude Include="device.h" />
     <ClInclude Include="palette.h" />
     <ClInclude Include="surface.h" />
+    <ClInclude Include="techdemopatcher.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\shared\shared.vcxproj">
+      <Project>{5f2c7921-4b31-4712-8722-c99eff304ec4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

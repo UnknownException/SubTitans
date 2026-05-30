@@ -54,15 +54,46 @@ void SoftwareRenderer::OnDestroyPrimarySurface()
 void SoftwareRenderer::Run()
 {
 	BITMAPINFO* primaryBitmapInfo = (BITMAPINFO*)new char[sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256];
+	memset(primaryBitmapInfo, 0, sizeof(BITMAPINFOHEADER));
+	primaryBitmapInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	primaryBitmapInfo->bmiHeader.biPlanes = 1;
+	primaryBitmapInfo->bmiHeader.biCompression = BI_RGB;
+	primaryBitmapInfo->bmiHeader.biBitCount = 8;
+	primaryBitmapInfo->bmiHeader.biClrUsed = 256;
+	primaryBitmapInfo->bmiHeader.biSizeImage = 0;
+
 	uint8_t* surfaceBuffer = nullptr;
 
 	Mutex.lock();
+
+	Global::RenderInformation currentRenderInformation;
+	memset(&currentRenderInformation, 0, sizeof(Global::RenderInformation));
+
+	int32_t currentWidth = 0;
+	int32_t currentHeight = 0;
+	
 	while (IsThreadRunning)
 	{
 		Mutex.unlock();
 
+		uint32_t drawTime = timeGetTime();
+
+		if (surfaceBuffer)
+		{
+			auto dc = GetDC(Global::RenderWindow);
+
+			if (currentRenderInformation.InternalWidth == currentRenderInformation.MonitorWidth && currentRenderInformation.InternalHeight == currentRenderInformation.MonitorHeight)
+				SetDIBitsToDevice(dc, 0, 0, currentWidth, currentHeight, 0, 0, 0, currentHeight, surfaceBuffer, primaryBitmapInfo, DIB_RGB_COLORS);
+			else
+				StretchDIBits(dc, currentRenderInformation.Padding, 0, currentRenderInformation.AspectRatioCompensatedWidth, currentRenderInformation.MonitorHeight, 0, 0, currentWidth, currentHeight, surfaceBuffer, primaryBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+
+			ReleaseDC(Global::RenderWindow, dc);
+		}
+
+		drawTime = timeGetTime() - drawTime;
+		
 		// Render if event has been dispatched OR if the rendering will drop under 25fps as some screens like the loading screen do not dispatch the event
-		WaitForSingleObject(Global::RenderEvent, 40);
+		WaitForSingleObject(Global::RenderEvent, 40 - min(drawTime, 40));
 
 		Mutex.lock();
 
@@ -71,55 +102,66 @@ void SoftwareRenderer::Run()
 			continue;
 
 		// Stop rendering if the game isn't being focussed on
-		if (GetForegroundWindow() != Global::GameWindow)
+		HWND foregroundWindow = GetForegroundWindow();
+		if (foregroundWindow != Global::GameWindow && foregroundWindow != Global::RenderWindow)
 			continue;
 
 		// Prevent flickering caused by palette changes
 		if (PrimarySurface->PrimaryInvalid)
 			continue;
 
-		memset(primaryBitmapInfo, 0, sizeof(BITMAPINFOHEADER));
-		primaryBitmapInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		primaryBitmapInfo->bmiHeader.biWidth = PrimarySurface->Stride; // Read only value
-		primaryBitmapInfo->bmiHeader.biHeight = -PrimarySurface->Height; // Read only value
-		primaryBitmapInfo->bmiHeader.biPlanes = 1;
-		primaryBitmapInfo->bmiHeader.biCompression = BI_RGB;
-		primaryBitmapInfo->bmiHeader.biBitCount = 8;
-		primaryBitmapInfo->bmiHeader.biClrUsed = 256;
-		primaryBitmapInfo->bmiHeader.biSizeImage = 0;
+		if (PrimarySurface->BitsPerPixel == 8)
+		{
+			// Can't render without palette
+			if (!PrimarySurface->AttachedPalette)
+				continue;
+
+			primaryBitmapInfo->bmiHeader.biBitCount = 8;
+			primaryBitmapInfo->bmiHeader.biClrUsed = 256;
+		}
+		else
+		{
+			primaryBitmapInfo->bmiHeader.biBitCount = 32;
+			primaryBitmapInfo->bmiHeader.biClrUsed = 0;
+		}
+
+		primaryBitmapInfo->bmiHeader.biWidth = PrimarySurface->Width;
+		primaryBitmapInfo->bmiHeader.biHeight = -PrimarySurface->Height;
+
+		if (!surfaceBuffer || RecalculateSurface)
+		{
+			if (surfaceBuffer)
+			{
+				delete[] surfaceBuffer;
+
+				auto dc = GetDC(Global::RenderWindow);
+				PatBlt(dc, 0, 0, Global::MonitorWidth, Global::MonitorHeight, BLACKNESS);
+				ReleaseDC(Global::RenderWindow, dc);
+			}
+
+			surfaceBuffer = new uint8_t[PrimarySurface->Stride * PrimarySurface->Height];
+			RecalculateSurface = false;
+
+			memcpy(&currentRenderInformation, &RenderInformation, sizeof(Global::RenderInformation));
+		}
 
 		PrimarySurface->PrimaryDrawMutex.lock();
 
-		if (PrimarySurface->AttachedPalette)
+		if (PrimarySurface->BitsPerPixel == 8)
 		{
 			PrimarySurface->AttachedPalette->Mutex.lock();
 			memcpy(primaryBitmapInfo->bmiColors, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
 			PrimarySurface->AttachedPalette->Mutex.unlock();
 		}
 
-		if (!surfaceBuffer || RecalculateSurface)
-		{
-			if (surfaceBuffer)
-				delete[] surfaceBuffer;
-
-			surfaceBuffer = new uint8_t[PrimarySurface->Stride * PrimarySurface->Height];
-			RecalculateSurface = false;
-		}
-
 		memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+
+		SetEvent(Global::VerticalBlankEvent);
 
 		PrimarySurface->PrimaryDrawMutex.unlock();
 
-		auto dc = GetDC(nullptr);
-
-		if (RenderInformation.InternalWidth == RenderInformation.MonitorWidth && RenderInformation.InternalHeight == RenderInformation.MonitorHeight)
-			SetDIBitsToDevice(dc, 0, 0, PrimarySurface->Width, PrimarySurface->Height, 0, 0, 0, PrimarySurface->Height, surfaceBuffer, primaryBitmapInfo, DIB_RGB_COLORS);
-		else
-			StretchDIBits(dc, RenderInformation.Padding, 0, RenderInformation.AspectRatioCompensatedWidth, RenderInformation.MonitorHeight, 0, 0, PrimarySurface->Width, PrimarySurface->Height, surfaceBuffer, primaryBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
-
-		ReleaseDC(nullptr, dc);
-
-		SetEvent(Global::VerticalBlankEvent);
+		currentWidth = PrimarySurface->Width;
+		currentHeight = PrimarySurface->Height;
 	}
 	Mutex.unlock();
 

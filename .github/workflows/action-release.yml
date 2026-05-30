@@ -27,9 +27,10 @@ jobs:
         shell: powershell
         run: |
           Rename-Item -Path README.md -NewName readme.txt
+          Rename-Item -Path PROTON-v1_0-v1_1.md -NewName PROTON-v1_0-v1_1.txt
           Rename-Item -Path LICENSE -NewName license.txt
           $compress = @{
-            Path = "Release/*.dll", "readme.txt", "license.txt", "Release/*.ini"
+            Path = "Release/*.dll", "readme.txt", "PROTON-v1_0-v1_1.txt", "license.txt", "Release/*.ini"
             DestinationPath = "SubTitans.zip"
             Force = $True
           }

@@ -61,6 +61,7 @@ namespace Steam {
 
 SteamPatcher::SteamPatcher()
 {
+	_registerGameVersion = 0x01000000;
 }
 
 SteamPatcher::~SteamPatcher()
@@ -75,14 +76,22 @@ bool SteamPatcher::Initialize()
 	restartRequired |= Steam::RemoveFile(L"dplayx.dll");
 	restartRequired |= Steam::RemoveFile(L"steam_installscript.vdf");
 	restartRequired |= Steam::DisableCompatibilityMode();
+	restartRequired |= RestoreVersion(_registerGameVersion);
 
 	return !restartRequired;
 }
 
 void SteamPatcher::Configure()
 {
-	bool isWindows7 = IsWindows7OrGreater() && !IsWindows8OrGreater();
+	Global::RenderWidth = GetConfiguration()->GetInt32(L"SETTING", L"Width", 0);
+	if (Global::RenderWidth == 0)
+		Global::RenderWidth = Global::MonitorWidth;
 
+	Global::RenderHeight = GetConfiguration()->GetInt32(L"SETTING", L"Height", 0);
+	if (Global::RenderHeight == 0)
+		Global::RenderHeight = Global::MonitorHeight;
+
+	bool isWindows7 = IsWindows7OrGreater() && !IsWindows8OrGreater();
 	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
 
 	// Always enable the improved frames per second limiter when DirectDraw isn't used
@@ -105,19 +114,13 @@ void SteamPatcher::Configure()
 	{
 		GetLogger()->Informational("Using a DirectDraw replacement\n");
 
-		Global::RenderWidth = GetConfiguration()->GetInt32(L"SETTING", L"Width", 0);
-		if (Global::RenderWidth == 0)
-			Global::RenderWidth = Global::MonitorWidth;
-
-		Global::RenderHeight = GetConfiguration()->GetInt32(L"SETTING", L"Height", 0);
-		if (Global::RenderHeight == 0)
-			Global::RenderHeight = Global::MonitorHeight;
-
 		auto ddrawReplacementPatch = new DDrawReplacementPatch();
 		ddrawReplacementPatch->DDrawDetourAddress = 0x006BAC31;
 		ddrawReplacementPatch->DInputDetourAddress = 0x0071C56E;
 		ddrawReplacementPatch->WindowRegisterClassDetourAddress = 0x0056C707;
 		ddrawReplacementPatch->WindowCreateDetourAddress = 0x0056C753;
+		ddrawReplacementPatch->VideoFormatCheckDetourAddress = 0x006C3CB0;
+		ddrawReplacementPatch->VideoScalingAddress = 0x006C5047;
 		ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = 0x0071C9C0;
 		ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software
 			|| (isWindows7 && renderingBackend == Global::RenderingBackend::Automatic); // Prefer software rendering on windows 7
@@ -141,8 +144,6 @@ void SteamPatcher::Configure()
 		nativeResolutionPatch->GamefieldPresetHeightAddress = 0x0056CA16;
 		nativeResolutionPatch->GamefieldHeightReducingAddress = 0x004F88C7;
 		nativeResolutionPatch->GamefieldHeightRestorationAddress = 0x004FCCF7;
-		nativeResolutionPatch->MovieWidthAddress = 0x00571D55;
-		nativeResolutionPatch->MovieHeightAddress = 0x00571D5C;
 		nativeResolutionPatch->RepositionBottomMenuDetourAddress = 0x004F8084;
 		nativeResolutionPatch->RenameSettingsDetourAddress = 0x005309D0;
 		nativeResolutionPatch->RenameSettingsFunctionAddress = 0x00712E20;

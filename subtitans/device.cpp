@@ -9,20 +9,21 @@ using namespace DDraw;
 
 Device::Device() 
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__); 
 
 	referenceCount = 0;
 }
 Device::~Device() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 }
 
 // IUnknown
 uint32_t __stdcall Device::QueryInterface(GUID* guid, void** result) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
+	// IID_IDirectDraw4
 	if (guid->Data1 == 0x9C59509A &&
 		guid->Data2 == 0x39BD &&
 		guid->Data3 == 0x11D1 &&
@@ -42,7 +43,7 @@ uint32_t __stdcall Device::QueryInterface(GUID* guid, void** result)
 
 uint32_t __stdcall Device::AddRef() 
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
 	referenceCount++;
 
@@ -51,7 +52,7 @@ uint32_t __stdcall Device::AddRef()
 
 uint32_t __stdcall Device::Release() 
 { 
-	GetLogger()->Trace("%s (Remaining references %i)\n", __FUNCTION__, referenceCount);
+	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, referenceCount);
 
 	if(--referenceCount == 0)
 		delete this;
@@ -60,11 +61,11 @@ uint32_t __stdcall Device::Release()
 }
 
 // Direct Draw
-uint32_t __stdcall Device::Compact() { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Device::Compact() { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall Device::CreateClipper(uint32_t, IDDrawClipper** result, void*) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	*result = new Clipper();
 	(*result)->AddRef();
 
@@ -73,26 +74,27 @@ uint32_t __stdcall Device::CreateClipper(uint32_t, IDDrawClipper** result, void*
 
 uint32_t __stdcall Device::CreatePalette(uint32_t flags, void* palette, IDDrawPalette** result, void* unused) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 	*result = new Palette();
 	(*result)->AddRef();
 
-	return ((Palette*)*result)->CreatePallete(flags, (uint8_t*)palette) ? ResultCode::Ok : ResultCode::Unimplemented;
+	return ((Palette*)*result)->CreatePallete(flags, (uint32_t*)palette) ? ResultCode::Ok : ResultCode::Unimplemented;
 }
 
 uint32_t __stdcall Device::CreateSurface(DDraw::SurfaceDescription* surfaceDescription, IDDrawSurface4** result, void* unused) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	*result = new Surface(surfaceDescription);
 	(*result)->AddRef();
 
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall Device::DuplicateSurface(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Device::DuplicateSurface(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+
 uint32_t __stdcall Device::EnumDisplayModes(uint32_t flags, void* surfaceDescription, void* appDef, EnumDisplayModesCallBack callback)
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (flags != 0)
 	{
@@ -118,7 +120,7 @@ uint32_t __stdcall Device::EnumDisplayModes(uint32_t flags, void* surfaceDescrip
 		return ResultCode::InvalidArgument;
 	}
 
-	constexpr uint32_t bitsPerPixel[] = { 8,/* 16,*/ 32 };
+	constexpr uint32_t bitsPerPixel[] = { 8, 32 };
 	const std::vector<std::pair<uint32_t, uint32_t>> displayModes = { 
 		std::make_pair(640, 480), 
 		std::make_pair(800, 600), 
@@ -139,7 +141,7 @@ uint32_t __stdcall Device::EnumDisplayModes(uint32_t flags, void* surfaceDescrip
 				| SurfaceDescriptionFlag::RefreshRate | SurfaceDescriptionFlag::PixelFormat;
 			resultSurfaceDescription.width = displayMode.first;
 			resultSurfaceDescription.height = displayMode.second;
-			resultSurfaceDescription.pitch = ((displayMode.first * bbp + 31) & ~31) >> 3; //displayMode.first * (bbp / 8);
+			resultSurfaceDescription.pitch = ((displayMode.first * bbp + 31) & ~31) >> 3;
 			resultSurfaceDescription.refreshRate = 0;
 			resultSurfaceDescription.pixelFormat.size = sizeof(PixelFormat);
 			resultSurfaceDescription.pixelFormat.flags = PixelFormatFlag::RGB;
@@ -149,12 +151,15 @@ uint32_t __stdcall Device::EnumDisplayModes(uint32_t flags, void* surfaceDescrip
 			{
 				case 8:
 					resultSurfaceDescription.pixelFormat.flags |= PixelFormatFlag::PalettedIndexed8;
-//				case 16:
+					break;
 				case 32:
-				default: 
 					resultSurfaceDescription.pixelFormat.rBitMask = 0xFF0000;
 					resultSurfaceDescription.pixelFormat.gBitMask = 0xFF00;
 					resultSurfaceDescription.pixelFormat.bBitMask = 0xFF;
+					break;
+				default:
+					GetLogger()->Critical("%s %ibbp not implemented!\n", __FUNCTION__, bbp);
+					UNIMPLEMENTED_EXIT();
 					break;
 			}
 
@@ -170,17 +175,17 @@ uint32_t __stdcall Device::EnumDisplayModes(uint32_t flags, void* surfaceDescrip
 		}
 	}
 
-	GetLogger()->Trace("%s finished\n", __FUNCTION__);
+	TRACELOG("%s finished\n", __FUNCTION__);
 
 	return ResultCode::Ok; 
 }
 
-uint32_t __stdcall Device::EnumSurfaces(uint32_t, void*, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::FlipToGDISurface() { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Device::EnumSurfaces(uint32_t, void*, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::FlipToGDISurface() { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall Device::GetCaps(Caps* caps, Caps* helCaps) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
 	memset(caps, 0, sizeof(Caps));
 	caps->size = sizeof(Caps);
@@ -191,48 +196,63 @@ uint32_t __stdcall Device::GetCaps(Caps* caps, Caps* helCaps)
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall Device::GetDisplayMode(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetFourCCCodes(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetGDISurface(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetMonitoryFrequency(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetScanLine(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetVerticalBlankStatus(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::Initialize(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetDisplayMode(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetFourCCCodes(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetGDISurface(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetMonitoryFrequency(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetScanLine(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetVerticalBlankStatus(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::Initialize(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall Device::RestoreDisplayMode() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	return ResultCode::Ok; 
 }
 
 uint32_t __stdcall Device::SetCooperativeLevel(HWND hwnd, uint32_t flags) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	return ResultCode::Ok;
 }
 
 uint32_t __stdcall Device::SetDisplayMode(uint32_t width, uint32_t height, uint32_t bitsPerPixel, uint32_t refreshRate, uint32_t flags) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (Global::Backend)
 		Global::Backend->OnDestroyPrimarySurface();
 
+	if (Global::VideoRequested)
+		GetLogger()->Debug("Video %ix%ix%ibpp\n", width, height, bitsPerPixel);
+	else
+		GetLogger()->Debug("Game %ix%ix%ibpp\n", width, height, bitsPerPixel);
+
+	Global::VideoRequested = false;
+
 	Global::InternalWidth = width;
 	Global::InternalHeight = height;
-
 	Global::BitsPerPixel = bitsPerPixel;
 
-	SetWindowPos(Global::GameWindow, NULL, 0, 0, Global::MonitorWidth, Global::MonitorHeight, 0);
+	RECT rect;
+	if (GetWindowRect(Global::GameWindow, &rect))
+	{
+		int32_t currWidth = rect.right - rect.left;
+		int32_t currHeight = rect.bottom - rect.top;
 
-	Global::VideoWorkaround = bitsPerPixel != 8 && width == 800 && height == 600;
+		if (currWidth != Global::MonitorWidth || currHeight != Global::MonitorHeight)
+			SetWindowPos(Global::GameWindow, nullptr, 0, 0, Global::MonitorWidth, Global::MonitorHeight, SWP_NOMOVE);
+	}
+
+	// RenderWindow must act as a click through overlay over the game window.
+	ShowWindow(Global::RenderWindow, SW_SHOWNOACTIVATE);
 
 	return ResultCode::Ok;
 }
 
 uint32_t __stdcall Device::WaitForVerticalBlank(uint32_t flag, void*) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (flag == 1)
 		WaitForSingleObject(Global::VerticalBlankEvent, 65);
@@ -242,11 +262,11 @@ uint32_t __stdcall Device::WaitForVerticalBlank(uint32_t flag, void*)
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall Device::GetAvailableVidMem(void*, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetSurfaceFromDC(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::RestoreAllSurfaces() { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::TestCooperativeLevel() { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Device::GetDeviceIdentifier(void*,uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetAvailableVidMem(void*, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetSurfaceFromDC(void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::RestoreAllSurfaces() { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::TestCooperativeLevel() { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Device::GetDeviceIdentifier(void*,uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall DirectDrawCreate(void*, IDDraw4** result, void*)
 {

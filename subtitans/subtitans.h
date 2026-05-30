@@ -11,6 +11,7 @@
 #include <atomic>
 
 #pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "Imagehlp.lib") // PEScalpel
 
 #include "../shared/gameversion.h"
 #include "../shared/detour.h"
@@ -19,14 +20,16 @@
 #include "../shared/configuration.h"
 #include "../shared/file.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/shared.lib")
-#else
-	#pragma comment(lib, "../Release/shared.lib")
-#endif
-
 Logger* GetLogger(); // Singleton
 Configuration* GetConfiguration(); // Singleton
+void Exit();
+#define UNIMPLEMENTED_EXIT() if(GetConfiguration()->GetBoolean(L"SECURITY", L"PreventExecutingUnimplemented", true)) { Exit(); }
+
+#ifdef _DEBUG
+	#define TRACELOG(format, ...) GetLogger()->Trace(format, ##__VA_ARGS__)
+#else
+	#define TRACELOG(format, ...) ((void)0)
+#endif
 
 namespace ResultCode {
 	constexpr uint32_t Ok				= 0x00000000;
@@ -60,9 +63,10 @@ namespace Global {
 
 	extern int32_t BitsPerPixel; // Variable
 
-	extern bool VideoWorkaround; // Variable
+	extern bool VideoRequested; // Variable
 
 	extern HWND GameWindow; // Don't use this with GetDC/ReleaseDC on different threads
+	extern HWND RenderWindow;
 
 	extern HANDLE RenderEvent;
 	extern HANDLE VerticalBlankEvent;

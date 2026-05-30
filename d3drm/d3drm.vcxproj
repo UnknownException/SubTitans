@@ -84,6 +84,11 @@
     <ClCompile Include="d3drm.cpp" />
     <ClCompile Include="injector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\shared\shared.vcxproj">
+      <Project>{5f2c7921-4b31-4712-8722-c99eff304ec4}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

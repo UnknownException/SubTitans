@@ -27,9 +27,6 @@ public:
 	unsigned long GamefieldHeightReducingAddress;
 	unsigned long GamefieldHeightRestorationAddress;
 
-	unsigned long MovieWidthAddress;
-	unsigned long MovieHeightAddress;
-
 	unsigned long RepositionBottomMenuDetourAddress;
 	unsigned long RenameSettingsDetourAddress;
 	unsigned long RenameSettingsFunctionAddress;

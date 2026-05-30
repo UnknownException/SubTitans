@@ -23,7 +23,7 @@ uint32_t __stdcall Input::QueryInterface(GUID* guid, void** result)
 
 uint32_t __stdcall Input::AddRef()
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	ReferenceCount++;
 
@@ -32,7 +32,7 @@ uint32_t __stdcall Input::AddRef()
 
 uint32_t __stdcall Input::Release()
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (--ReferenceCount == 0)
 		delete this;
@@ -42,7 +42,7 @@ uint32_t __stdcall Input::Release()
 
 uint32_t __stdcall Input::CreateDevice(GUID* guid, DInput::IDInputDevice7** result, void*)
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	GUID mouseGuid;	
 	mouseGuid.Data1 = 0x6F1D2B60;
@@ -79,12 +79,12 @@ uint32_t __stdcall Input::CreateDevice(GUID* guid, DInput::IDInputDevice7** resu
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall Input::EnumDevices(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Input::GetDeviceStatus(GUID* guid) {	GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Input::RunControlPanel(HWND, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Input::Initialize(HINSTANCE hInstance, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Input::FindDevice(GUID* guid, void* str, void* guid2) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall Input::CreateDeviceEx(GUID*, GUID, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall Input::EnumDevices(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Input::GetDeviceStatus(GUID* guid) {	GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Input::RunControlPanel(HWND, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Input::Initialize(HINSTANCE hInstance, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Input::FindDevice(GUID* guid, void* str, void* guid2) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall Input::CreateDeviceEx(GUID*, GUID, void*, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall DirectInputCreate(HINSTANCE hInstance, uint32_t version, DInput::IDInput7** result, void*)
 {
