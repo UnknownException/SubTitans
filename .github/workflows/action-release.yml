@@ -5,7 +5,7 @@ on:
 jobs:
   build:
     name: Build SubTitans
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Create Timestamp
         id: create_timestamp
@@ -21,7 +21,7 @@ jobs:
 
       - name: Compile
         shell: cmd
-        run: msbuild SubTitans.sln -p:Configuration=Release -p:Platform=x86
+        run: msbuild SubTitans.sln -p:Configuration=Release -p:Platform=x86 -p:PlatformToolset=v142
 
       - name: Create Zip
         shell: powershell
