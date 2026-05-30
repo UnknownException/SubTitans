@@ -6,12 +6,6 @@
 #include "../shared/file.h"
 #include "injector.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/shared.lib")
-#else
-	#pragma comment(lib, "../Release/shared.lib")
-#endif
-
 #pragma comment(linker, "/EXPORT:D3DRMVectorModulus=_D3DRMVectorModulus@4")
 extern "C" float __stdcall D3DRMVectorModulus(D3DVector3* vector)
 {
@@ -26,14 +20,17 @@ uint32_t GetSubTitansVersion()
 	WCHAR applicationPath[MAX_PATH];
 	GetModuleFileName(NULL, applicationPath, MAX_PATH);
 
-	uint32_t checkSum = File::CalculateChecksum(applicationPath);
+	uint32_t checkSum = File::CalculateChecksumW(applicationPath);
 	
 	switch (checkSum)
 	{
-		case Shared::ST_GAMEVERSION_RETAIL_UNPATCHED:
-		case Shared::ST_GAMEVERSION_RETAIL_PATCHED:
-		case Shared::ST_GAMEVERSION_GOG_MODIFIED:
-		case Shared::ST_GAMEVERSION_DEMO:
+		case Shared::ST_GAMEVERSION_0_0_6:
+		case Shared::ST_GAMEVERSION_0_1_6:
+		case Shared::ST_GAMEVERSION_1_0_0:
+		case Shared::ST_GAMEVERSION_1_1_0:
+		case Shared::ST_GAMEVERSION_1_1_0_ASLR_DEP:
+		case Shared::ST_GAMEVERSION_1_1_0_GOG:
+		case Shared::ST_GAMEVERSION_1_1_0_GOG_ASLR_DEP:
 			return checkSum;
 		default:
 			return 0;

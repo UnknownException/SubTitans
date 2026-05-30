@@ -1,13 +1,10 @@
 #pragma once
 #include "patcher.h"
 
-class SteamPatcher : public Patcher {
-protected:
-	uint32_t _registerGameVersion = 0;
-
+class TechDemoPatcher : public Patcher {
 public:
-	SteamPatcher();
-	virtual ~SteamPatcher();
+	TechDemoPatcher();
+	virtual ~TechDemoPatcher();
 
 protected:
 	virtual bool Initialize() override;

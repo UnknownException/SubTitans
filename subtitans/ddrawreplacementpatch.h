@@ -14,6 +14,11 @@ public:
 	unsigned long DInputDetourAddress;
 	unsigned long WindowRegisterClassDetourAddress;
 	unsigned long WindowCreateDetourAddress;
+	unsigned long VideoScalingAddress;
+	/// <summary>
+	/// Optional; log which video is being prepared to play
+	/// </summary>
+	unsigned long VideoFormatCheckDetourAddress;
 	uint32_t DInputAbsolutePositioningDetourAddress;
 	bool ForceSoftwareRendering;
 	bool DInputReplacement;

@@ -2,6 +2,7 @@
 #include "patch.h"
 
 class Patcher {
+
 public:
 	Patcher();
 	virtual ~Patcher();
@@ -14,4 +15,6 @@ public:
 
 protected:
 	std::vector<Patch*> _patches;
+
+	static bool RestoreVersion(uint32_t expectedVersionValue);
 };

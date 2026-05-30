@@ -15,9 +15,8 @@ bool File::Exists(const wchar_t* path)
 
 // Only Kernel32 dependent
 constexpr uint32_t CRC32_POLYNOMIAL = 0xEDB88320;
-unsigned int File::CalculateChecksum(const wchar_t* path)
+unsigned int CalculateChecksum(HANDLE fileHandle)
 {
-	HANDLE fileHandle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (fileHandle == INVALID_HANDLE_VALUE)
 		return 0;
 
@@ -25,28 +24,18 @@ unsigned int File::CalculateChecksum(const wchar_t* path)
 
 	HANDLE processHeap = GetProcessHeap();
 	if (processHeap == NULL)
-	{
-		CloseHandle(fileHandle);
 		return 0;
-	}
 
 	void* allocatedMemory = HeapAlloc(processHeap, HEAP_ZERO_MEMORY, allocatedSize);
 	if (allocatedMemory == nullptr)
-	{
-		CloseHandle(fileHandle);
 		return 0;
-	}
 
 	DWORD bytesRead = 0;
 	if (!ReadFile(fileHandle, allocatedMemory, allocatedSize, &bytesRead, 0) || bytesRead != allocatedSize)
 	{
-		CloseHandle(fileHandle);
 		HeapFree(processHeap, 0, allocatedMemory);
-
 		return 0;
 	}
-
-	CloseHandle(fileHandle);
 
 	uint32_t checkSumTable[256];
 	for (uint32_t tableIt = 0; tableIt < sizeof(checkSumTable) / sizeof(uint32_t); ++tableIt)
@@ -69,4 +58,28 @@ unsigned int File::CalculateChecksum(const wchar_t* path)
 	HeapFree(processHeap, 0, allocatedMemory);
 
 	return ~checkSumResult;
+}
+
+uint32_t File::CalculateChecksumA(const char* path)
+{
+	HANDLE fileHandle = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fileHandle == INVALID_HANDLE_VALUE)
+		return 0;
+
+	uint32_t checksum = CalculateChecksum(fileHandle);
+
+	CloseHandle(fileHandle);
+	return checksum;
+}
+
+uint32_t File::CalculateChecksumW(const wchar_t* path)
+{
+	HANDLE fileHandle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fileHandle == INVALID_HANDLE_VALUE)
+		return 0;
+
+	uint32_t checksum = CalculateChecksum(fileHandle);
+
+	CloseHandle(fileHandle);
+	return checksum;
 }

@@ -83,6 +83,15 @@
     <ClCompile Include="demopatcher.cpp">
       <Filter>patcher</Filter>
     </ClCompile>
+    <ClCompile Include="techdemopatcher.cpp">
+      <Filter>patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="registrypatch.cpp">
+      <Filter>patches</Filter>
+    </ClCompile>
+    <ClCompile Include="pescalpel.cpp">
+      <Filter>pe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patcher.h">
@@ -200,6 +209,15 @@
     <ClInclude Include="demopatcher.h">
       <Filter>patcher</Filter>
     </ClInclude>
+    <ClInclude Include="techdemopatcher.h">
+      <Filter>patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="registrypatch.h">
+      <Filter>patches</Filter>
+    </ClInclude>
+    <ClInclude Include="pescalpel.h">
+      <Filter>pe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="patcher">
@@ -222,6 +240,9 @@
     </Filter>
     <Filter Include="external\imgui">
       <UniqueIdentifier>{7b3b4aa3-26da-4048-aee1-be945cf29d93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pe">
+      <UniqueIdentifier>{5f0f4339-857a-4f35-b55e-aa25b353262a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@ namespace DDrawCreateDetour {
 	static unsigned long JmpFromAddress = 0;
 	static unsigned long JmpBackAddress = 0;
 
-	__declspec(naked) void Implementation()
+	static __declspec(naked) void Implementation() 
 	{
 		__asm call [DirectDrawCreate];
 		__asm jmp [JmpBackAddress];
@@ -24,7 +24,7 @@ namespace DInputCreateDetour {
 	static unsigned long JmpFromAddress = 0;
 	static unsigned long JmpBackAddress = 0;
 
-	__declspec(naked) void Implementation()
+	static __declspec(naked) void Implementation()
 	{
 		__asm call [DirectInputCreate];
 		__asm jmp [JmpBackAddress];
@@ -42,42 +42,14 @@ namespace WindowRegisterClassDetour {
 
 	static uint8_t KeyTranslationTable[256] = { 0, };
 
-	LRESULT CALLBACK WndProcDetour(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
+	static LRESULT CALLBACK WndProcDetour(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	{
 		switch (message)
 		{
 			case WM_WINDOWPOSCHANGING:
 			{
-				GetLogger()->Debug("Handling WM_WINDOWPOSCHANGING\n");
-				WINDOWPOS* windowPos = (WINDOWPOS*)lParam;
-				if (windowPos->cx != Global::MonitorWidth || windowPos->cy != Global::MonitorHeight)
-				{
-					windowPos->cx = Global::MonitorWidth;
-					windowPos->cy = Global::MonitorHeight;
-					
-					if (Global::GameWindow)
-					{
-						HDC deviceContext = GetDC(Global::GameWindow);
-
-						RECT rect;
-						rect.left = 0;
-						rect.top = 0;
-						rect.right = Global::MonitorWidth;
-						rect.bottom = Global::MonitorHeight;
-
-						HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
-						FillRect(deviceContext, &rect, brush);
-						DeleteObject(brush);
-
-						ReleaseDC(Global::GameWindow, deviceContext);
-					}
-				}
-
-				RECT rect;
-				rect.left = 0;
-				rect.top = 0;
-				rect.right = Global::InternalWidth;
-				rect.bottom = Global::InternalHeight;
+				TRACELOG("%s %s\n", __FUNCTION__, "WM_WINDOWPOSCHANGING");
+				RECT rect { 0, 0 , Global::InternalWidth, Global::InternalHeight };
 				ClipCursor(&rect);
 			} break;
 			case WM_MOUSEMOVE:
@@ -112,7 +84,7 @@ namespace WindowRegisterClassDetour {
 				Global::MouseInformation.mPressed = Global::KeyPressedFlag;
 				break;
 			case WM_XBUTTONUP:
-				// Filter on key?
+				// The game doesn't differentiate between button 1 and 2
 				Global::MouseInformation.xPressed = Global::KeyReleasedFlag;
 				break;
 			case WM_XBUTTONDOWN:
@@ -165,11 +137,7 @@ namespace WindowRegisterClassDetour {
 				
 				if (wParam == 1)
 				{
-					RECT rect;
-					rect.left = 0;
-					rect.top = 0;
-					rect.right = Global::InternalWidth;
-					rect.bottom = Global::InternalHeight;
+					RECT rect{ 0, 0 , Global::InternalWidth, Global::InternalHeight };
 					ClipCursor(&rect);
 				}
 				else
@@ -184,14 +152,14 @@ namespace WindowRegisterClassDetour {
 		return WndProc(hWnd, message, wParam, lParam);
 	}
 
-	ATOM __stdcall RegisterClassDetour(WNDCLASSA* wndClass)
+	static ATOM __stdcall RegisterClassDetour(WNDCLASSA* wndClass)
 	{
 		WndProc = wndClass->lpfnWndProc;
 		wndClass->lpfnWndProc = WndProcDetour;
 		return RegisterClassA(wndClass);
 	}
 
-	__declspec(naked) void Implementation()
+	static __declspec(naked) void Implementation()
 	{
 		__asm call [RegisterClassDetour];
 		__asm jmp [JmpBackAddress];
@@ -207,8 +175,50 @@ namespace WindowCreateDetour {
 	// Function variables
 	static bool ForceSoftwareRendering = false;
 
-	void __stdcall CreateRenderer()
+	static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	{
+		switch (uMsg) 
+		{
+			case WM_MOUSEACTIVATE:
+				return MA_NOACTIVATE;
+			case WM_NCHITTEST:
+				return HTTRANSPARENT;
+			default:
+				return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		}
+	}
+
+	static void CreateRenderWindow()
+	{		
+		WNDCLASS wc = {};
+		wc.lpfnWndProc = OverlayWndProc;
+		wc.hInstance = GetModuleHandle(NULL);
+		wc.lpszClassName = L"SubTitansOverlay";
+		wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+		RegisterClass(&wc);
+
+		HWND hwndOverlay = CreateWindowEx(
+			WS_EX_NOACTIVATE | WS_EX_NOPARENTNOTIFY,
+			L"SubTitansOverlay",
+			L"SubTitans Overlay",
+			WS_POPUP,
+			0, 0,
+			Global::MonitorWidth,
+			Global::MonitorHeight,
+			Global::GameWindow, // Parent
+			NULL, GetModuleHandle(NULL), NULL
+		);
+
+		ShowWindow(hwndOverlay, SW_SHOWNOACTIVATE);
+		UpdateWindow(hwndOverlay);
+
+		Global::RenderWindow = hwndOverlay;
+	}
+
+	static void __stdcall CreateRenderer()
+	{
+		CreateRenderWindow();
+
 		IRenderer* renderer = nullptr;
 		if (!ForceSoftwareRendering)
 		{
@@ -228,13 +238,17 @@ namespace WindowCreateDetour {
 		{
 			GetLogger()->Informational("Using the software renderer\n");
 			renderer = new SoftwareRenderer();
-			renderer->Create();
+			if (!renderer->Create())
+			{
+				GetLogger()->Critical("Failed to create the software renderer\n");
+				Exit();
+			}
 		}
 
 		Global::Backend = renderer;
 	}
 
-	__declspec(naked) void Implementation()
+	static __declspec(naked) void Implementation()
 	{
 		__asm call [CreateWindowExA];
 		__asm mov [Global::GameWindow], eax;
@@ -252,10 +266,98 @@ namespace DInputAbsolutePositioning {
 	static unsigned long JmpFromAddress = 0;
 	static unsigned long JmpBackAddress = 0;
 
-	__declspec(naked) void Implementation()
+	static __declspec(naked) void Implementation()
 	{
 		__asm mov edi, [Global::MouseInformation.x];
 		__asm mov edx, [Global::MouseInformation.y];
+		__asm jmp [JmpBackAddress];
+	}
+}
+
+namespace VideoFormatCheckDetour {
+	// This is a remnant of a previous attempt to fix the video playback.
+	// It's handy for (my) debugging / tracing purposes :)
+
+	// Detour variables
+	constexpr unsigned long DetourSize = 9;
+	static unsigned long JmpFromAddress = 0;
+	static unsigned long JmpBackAddress = 0;
+
+	static void __stdcall PeekVideoName(const char* videoPath)
+	{
+		uint32_t length = strlen(videoPath);
+		if (length == 0) return;
+
+		uint32_t start = 0;
+		for (uint32_t i = length - 1; i > 0; --i)
+		{
+			if (videoPath[i] == '\\')
+			{
+				start = i + 1;
+				break;
+			}
+		}
+
+		// Final char \ check & I don't expect the filename to start at the first character
+		if (start != length && start != 0)
+		{
+			Global::VideoRequested = true;
+			GetLogger()->Informational("Video '%s' is being prepared to play.\n", std::string(videoPath + start, length - start).c_str());
+		}
+		else
+		{
+			GetLogger()->Informational("Failed to grab video name\n");
+		}
+	}
+
+	static __declspec(naked) void Implementation()
+	{
+		// Copy of the prologue
+		__asm push ebp;
+		__asm mov ebp, esp;
+		__asm push esi;
+		__asm push edi;
+
+		// Restore throw away register
+		__asm push ecx;
+
+		// Custom
+		__asm mov eax, dword ptr ss : [ebp + 0x08];
+		__asm push eax;
+		__asm call [PeekVideoName];
+
+		// Restore eax
+		__asm mov eax, dword ptr ss : [ebp + 0x08];
+
+		__asm jmp [JmpBackAddress];
+	}
+}
+
+namespace VideoScalingDetour {
+	// The game doesn't expect the window to be a different dimensions than 640x480, 800x600, 1024x768 or 1280x1024.
+	// When the video scaling/positioning function is called with certain flags set, it'll center the video based on the window dimensions. 
+	// This results in the video being (partly) blit outside of the surface buffer, as the buffer matches the expected dimensions and not window dimensions.
+
+	constexpr unsigned long DetourSize = 6;
+	static unsigned long JmpFromAddress = 0;
+	static unsigned long JmpBackAddress = 0;
+
+	// Use the internal width/height instead of the window dimensions
+	static BOOL __stdcall GetClientRectImpl(HWND* hWnd, RECT* rect)
+	{		
+		rect->left = 0;
+		rect->top = 0;
+		rect->right = Global::InternalWidth;
+		rect->bottom = Global::InternalHeight;
+
+		GetLogger()->Debug("GetClientRect override: %ix%i\n", rect->right, rect->bottom);
+
+		return TRUE;
+	}
+
+	static __declspec(naked) void Implementation()
+	{
+		__asm call [GetClientRectImpl];
 		__asm jmp [JmpBackAddress];
 	}
 }
@@ -268,6 +370,8 @@ DDrawReplacementPatch::DDrawReplacementPatch()
 	DInputDetourAddress = 0;
 	WindowRegisterClassDetourAddress = 0;
 	WindowCreateDetourAddress = 0;
+	VideoFormatCheckDetourAddress = 0;
+	VideoScalingAddress = 0;
 	DInputAbsolutePositioningDetourAddress = 0;
 	ForceSoftwareRendering = false;
 	DInputReplacement = false;
@@ -283,12 +387,16 @@ DDrawReplacementPatch::~DDrawReplacementPatch()
 
 bool DDrawReplacementPatch::Validate()
 {
-	return DDrawDetourAddress && DInputDetourAddress 
-		&& WindowRegisterClassDetourAddress && WindowCreateDetourAddress
+	return DDrawDetourAddress
+		&& DInputDetourAddress 
+		&& WindowRegisterClassDetourAddress
+		&& WindowCreateDetourAddress
+//		&& VideoFormatCheckDetourAddress // Optional; The detoured function does not exist in the demo :(
+		&& VideoScalingAddress
 		&& DInputAbsolutePositioningDetourAddress;
 }
 
-void BuildKeyLookupTable()
+static void BuildKeyLookupTable()
 {
 	auto t = &WindowRegisterClassDetour::KeyTranslationTable;
 
@@ -418,6 +526,19 @@ bool DDrawReplacementPatch::Apply()
 	if (!Detour::Create(WindowCreateDetour::JmpFromAddress, WindowCreateDetour::DetourSize, (unsigned long)WindowCreateDetour::Implementation))
 		return false;
 
+	if (VideoFormatCheckDetourAddress != 0)
+	{
+		VideoFormatCheckDetour::JmpFromAddress = VideoFormatCheckDetourAddress;
+		VideoFormatCheckDetour::JmpBackAddress = VideoFormatCheckDetour::JmpFromAddress + VideoFormatCheckDetour::DetourSize;
+		if (!Detour::Create(VideoFormatCheckDetour::JmpFromAddress, VideoFormatCheckDetour::DetourSize, (unsigned long)VideoFormatCheckDetour::Implementation))
+			return false;
+	}
+
+	VideoScalingDetour::JmpFromAddress = VideoScalingAddress;
+	VideoScalingDetour::JmpBackAddress = VideoScalingDetour::JmpFromAddress + VideoScalingDetour::DetourSize;
+	if (!Detour::Create(VideoScalingDetour::JmpFromAddress, VideoScalingDetour::DetourSize, (unsigned long)VideoScalingDetour::Implementation))
+		return false;
+	
 	if (DInputReplacement)
 	{
 		DInputCreateDetour::JmpFromAddress = DInputDetourAddress;

@@ -1,36 +1,46 @@
 #include "subtitans.h"
 #include "sleepwellpatch.h"
 #include "ddrawreplacementpatch.h"
-#include "demopatcher.h"
+#include "registrypatch.h"
+#include "shlobj.h"
+#include "techdemopatcher.h"
 
-// The bare minimum to get the Submarine Titans demo running.
+// The bare minimum to get the Submarine Titans technology demo running.
 // DirectDraw support is dropped, OpenGL or Software rendering is forced.
 // No support for custom resolutions/widescreen is provided.
 // If the game keeps crashing you must delete the savegame folder and create a profile in-game.
 // Disabling the intro video through stconfig.exe might help improve stability.
+// Doesn't work well without Administrator privileges.
 
-DemoPatcher::DemoPatcher()
+TechDemoPatcher::TechDemoPatcher()
 {
-	_registerGameVersion = 0x00100000;
 }
 
-DemoPatcher::~DemoPatcher()
+TechDemoPatcher::~TechDemoPatcher()
 {
 
 }
 
-bool DemoPatcher::Initialize()
+bool TechDemoPatcher::Initialize()
 {
-	bool restartRequired = RestoreVersion(_registerGameVersion);
-	return !restartRequired;
+	if (!IsUserAnAdmin())
+	{
+		MessageBox(NULL
+			, L"The Technology Demo has quite a few compatibility issues\n\n"
+				L"Without Administrator privileges you'll most likely encounter registry errors."
+			, L"Compatibility warning"
+			, MB_OK | MB_ICONWARNING);
+	}
+
+	return true;
 }
 
-void DemoPatcher::Configure()
+void TechDemoPatcher::Configure()
 {
 	auto sleepWellPatch = new SleepWellPatch();
-	sleepWellPatch->DetourAddress = 0x006D1714;
-	sleepWellPatch->FrameLimitMemoryAddress = 0x007EBF1C;
-	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x006D173B;
+	sleepWellPatch->DetourAddress = 0x00592FDA;
+	sleepWellPatch->FrameLimitMemoryAddress = 0x006B92EC;
+	sleepWellPatch->DisableOriginalLimiterSleepAddress = 0x00593001;
 	_patches.push_back(sleepWellPatch);
 
 	Global::RenderWidth = GetConfiguration()->GetInt32(L"SETTING", L"Width", 0);
@@ -44,16 +54,20 @@ void DemoPatcher::Configure()
 	auto renderingBackend = GetConfiguration()->GetInt32(L"FEATURE", L"Renderer", Global::RenderingBackend::Automatic);
 
 	auto ddrawReplacementPatch = new DDrawReplacementPatch();
-	ddrawReplacementPatch->DDrawDetourAddress = 0x006A6B81;
-	ddrawReplacementPatch->DInputDetourAddress = 0x00701C9E;
-	ddrawReplacementPatch->WindowRegisterClassDetourAddress = 0x00561847;
-	ddrawReplacementPatch->WindowCreateDetourAddress = 0x00561893;
+	ddrawReplacementPatch->DDrawDetourAddress = 0x005778A1;
+	ddrawReplacementPatch->DInputDetourAddress = 0x005B254E;
+	ddrawReplacementPatch->WindowRegisterClassDetourAddress = 0x00561895;
+	ddrawReplacementPatch->WindowCreateDetourAddress = 0x005618E1;
 	ddrawReplacementPatch->VideoFormatCheckDetourAddress = 0;
-	ddrawReplacementPatch->VideoScalingAddress = 0x006B0497;
-	ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = 0x007020F0;
+	ddrawReplacementPatch->VideoScalingAddress = 0x005842B7;
+	ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = 0x005B29A3;
 	ddrawReplacementPatch->ForceSoftwareRendering = renderingBackend == Global::RenderingBackend::Software;
 	ddrawReplacementPatch->DInputReplacement = false; // Doesn't work that well with the demo
 	_patches.push_back(ddrawReplacementPatch);
+
+	auto registryPatch = new RegistryPatch();
+	registryPatch->DetourAddress = 0x00565E1E;
+	_patches.push_back(registryPatch);
 
 	Global::RetroShader = GetConfiguration()->GetBoolean(L"FEATURE", L"RetroShader", false);
 }

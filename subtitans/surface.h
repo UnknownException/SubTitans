@@ -59,13 +59,23 @@ public:
 
 	// Custom
 private:
+	const uint32_t Identifier;
+	const DDraw::SurfaceDescription Description;
+public:
+	const int32_t Width;
+	const int32_t Height;
+	const int32_t BitsPerPixel;
+	const int32_t BytesPerPixel;
+	const int32_t Stride;
+
+private:
 	uint32_t ReferenceCount;
-	uint32_t Identifier;
+	Clipper* AttachedClipper;
+
+	std::pair<HDC, HGDIOBJ> MemoryDeviceContext;
+	uint8_t* MemoryDeviceBuffer;
 
 public:
-	int32_t Width; // Read only
-	int32_t Height; // Read only
-	int32_t Stride; // Read only
 	uint8_t* SurfaceBuffer;
 
 	std::mutex PrimaryDrawMutex;
@@ -73,10 +83,5 @@ public:
 
 	Palette* AttachedPalette;
 
-private:
-	DDraw::SurfaceDescription Description;
-	Clipper* AttachedClipper;
-
-	bool IsPrimary() { return (Description.flags & DDraw::SurfaceDescriptionFlag::Caps) && (Description.caps.caps[0] & DDraw::SurfaceCapsFlag::Primary); }
-	std::pair<HDC, HGDIOBJ> MemoryDeviceContext;
+	bool IsPrimary() const { return (Description.flags & DDraw::SurfaceDescriptionFlag::Caps) && (Description.caps.caps[0] & DDraw::SurfaceCapsFlag::Primary); }
 };

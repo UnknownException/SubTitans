@@ -23,8 +23,8 @@ namespace DDraw {
 
 		// Direct Draw Palette
 		virtual uint32_t __stdcall GetCaps(void*) = 0;
-		virtual uint32_t __stdcall GetEntries(uint32_t, uint32_t, uint32_t, uint8_t*) = 0;
+		virtual uint32_t __stdcall GetEntries(uint32_t, uint32_t, uint32_t, uint32_t*) = 0;
 		virtual uint32_t __stdcall Initialize(void*, uint32_t, void*) = 0;
-		virtual uint32_t __stdcall SetEntries(uint32_t, uint32_t, uint32_t, uint8_t*) = 0;
+		virtual uint32_t __stdcall SetEntries(uint32_t, uint32_t, uint32_t, uint32_t*) = 0;
 	};
 }

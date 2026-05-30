@@ -5,19 +5,19 @@ using namespace DDraw;
 
 Palette::Palette() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__); 
 
 	ReferenceCount = 0;
 
 	memset(RawPalette, 0, sizeof(RawPalette));
 }
 
-Palette::~Palette() { GetLogger()->Trace("%s\n", __FUNCTION__); }
+Palette::~Palette() { TRACELOG("%s\n", __FUNCTION__); }
 
 // IUnknown
 uint32_t __stdcall Palette::QueryInterface(GUID* guid, void** result)
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	GetLogger()->Error("%s %s\n", __FUNCTION__, "unknown interface");
 	*result = nullptr;
@@ -25,7 +25,7 @@ uint32_t __stdcall Palette::QueryInterface(GUID* guid, void** result)
 }
 uint32_t __stdcall Palette::AddRef() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__); 
 	
 	ReferenceCount++;
 
@@ -34,7 +34,7 @@ uint32_t __stdcall Palette::AddRef()
 
 uint32_t __stdcall Palette::Release()
 {
-	GetLogger()->Trace("%s (Remaining references %i)\n", __FUNCTION__, ReferenceCount);
+	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, ReferenceCount);
 
 	if(--ReferenceCount == 0)
 		delete this;
@@ -45,9 +45,9 @@ uint32_t __stdcall Palette::Release()
 // Palette
 uint32_t __stdcall Palette::GetCaps(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
 
-uint32_t __stdcall Palette::GetEntries(uint32_t shouldBeZero, uint32_t index, uint32_t count, uint8_t* result) 
+uint32_t __stdcall Palette::GetEntries(uint32_t shouldBeZero, uint32_t index, uint32_t count, uint32_t* result) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__); 
 
 	if (shouldBeZero != 0)
 	{
@@ -58,12 +58,12 @@ uint32_t __stdcall Palette::GetEntries(uint32_t shouldBeZero, uint32_t index, ui
 	Mutex.lock();
 
 	// BGR -> RGB
-	for (uint32_t i = 0; i < count * 4; i += 4)
+	for (uint32_t i = 0; i < count; ++i)
 	{
-		result[i] = RawPalette[index * 4 + i + 2];
-		result[i + 1] = RawPalette[index * 4 + i + 1];
-		result[i + 2] = RawPalette[index * 4 + i];
-		result[i + 3] = RawPalette[index * 4 + i + 3];
+		const uint32_t pixel = RawPalette[i];
+		result[i] = (pixel & 0xFF00FF00)
+			| ((pixel << 16) & 0x00FF0000)
+			| ((pixel >> 16) & 0x000000FF);
 	}
 
 	Mutex.unlock();
@@ -73,9 +73,9 @@ uint32_t __stdcall Palette::GetEntries(uint32_t shouldBeZero, uint32_t index, ui
 
 uint32_t __stdcall Palette::Initialize(void*, uint32_t, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
 
-uint32_t __stdcall Palette::SetEntries(uint32_t shouldBeZero, uint32_t index, uint32_t count, uint8_t* input)
+uint32_t __stdcall Palette::SetEntries(uint32_t shouldBeZero, uint32_t index, uint32_t count, uint32_t* input)
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__); 
 
 	if (shouldBeZero != 0)
 	{
@@ -86,12 +86,12 @@ uint32_t __stdcall Palette::SetEntries(uint32_t shouldBeZero, uint32_t index, ui
 	Mutex.lock();
 
 	// RGB -> BGR
-	for (uint32_t i = 0; i < count * 4; i += 4)
+	for (uint32_t i = 0; i < count; ++i)
 	{
-		RawPalette[index * 4 + i] = input[i + 2];
-		RawPalette[index * 4 + i + 1] = input[i + 1];
-		RawPalette[index * 4 + i + 2] = input[i];
-		RawPalette[index * 4 + i + 3] = input[i + 3];
+		const uint32_t pixel = input[i];
+		RawPalette[index + i] = (pixel & 0xFF00FF00)
+			| ((pixel << 16) & 0x00FF0000)
+			| ((pixel >> 16) & 0x000000FF);
 	}
 
 	Mutex.unlock();
@@ -99,9 +99,9 @@ uint32_t __stdcall Palette::SetEntries(uint32_t shouldBeZero, uint32_t index, ui
 	return ResultCode::Ok;
 }
 
-bool Palette::CreatePallete(uint32_t flags, uint8_t* palette)
+bool Palette::CreatePallete(uint32_t flags, uint32_t* palette)
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	// Not implemented
 	if (flags & PaletteCapabilityFlags::Bits_1) { GetLogger()->Error("%s %s\n", __FUNCTION__, "Bits_1"); return false; }
@@ -118,12 +118,12 @@ bool Palette::CreatePallete(uint32_t flags, uint8_t* palette)
 	Mutex.lock();
 
 	// RGB -> BGR
-	for (int i = 0; i < 1024; i += 4)
+	for (uint32_t i = 0; i < 256; ++i)
 	{
-		RawPalette[i] = palette[i+2];
-		RawPalette[i+1] = palette[i+1];
-		RawPalette[i+2] = palette[i];
-		RawPalette[i+3] = palette[i+3];
+		const uint32_t pixel = palette[i];
+		RawPalette[i] = (pixel & 0xFF00FF00)
+			| ((pixel << 16) & 0x00FF0000)
+			| ((pixel >> 16) & 0x000000FF);
 	}
 
 	Mutex.unlock();

@@ -13,17 +13,17 @@ public:
 
 	// Direct Draw Palette
 	virtual uint32_t __stdcall GetCaps(void*) override;
-	virtual uint32_t __stdcall GetEntries(uint32_t, uint32_t, uint32_t, uint8_t*) override;
+	virtual uint32_t __stdcall GetEntries(uint32_t, uint32_t, uint32_t, uint32_t*) override;
 	virtual uint32_t __stdcall Initialize(void*, uint32_t, void*) override;
-	virtual uint32_t __stdcall SetEntries(uint32_t, uint32_t, uint32_t, uint8_t*) override;
+	virtual uint32_t __stdcall SetEntries(uint32_t, uint32_t, uint32_t, uint32_t*) override;
 
 	// Custom
 private:
 	uint32_t ReferenceCount;
 public:
-	bool CreatePallete(uint32_t flags, uint8_t* palette);
+	bool CreatePallete(uint32_t flags, uint32_t* palette);
 
 	std::mutex Mutex;
 
-	uint8_t RawPalette[1024];
+	uint32_t RawPalette[256];
 };

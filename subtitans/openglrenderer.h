@@ -11,5 +11,6 @@ public:
 	virtual void OnDestroyPrimarySurface() override;
 
 protected:
+	void RecalculateGLSurface();
 	virtual void Run() override;
 };

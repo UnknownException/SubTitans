@@ -26,7 +26,7 @@ namespace MovieHeapCorruption {
 		{
 			GetLogger()->Critical("Failed to update an offset for the movie player! (Address 0x%08x)\n", address);
 			MessageBox(NULL, L"Unexpected failure while patching the movie player", L"SubTitans", MB_ICONERROR);
-			ExitProcess(-1);
+			return Exit();
 		}
 	}
 
@@ -35,6 +35,13 @@ namespace MovieHeapCorruption {
 	void __stdcall AllocateMemoryAndRedirectReferences()
 	{
 		NewAllocatedMemoryAddress = CoTaskMemAlloc(0x11A * 4);
+		if (NewAllocatedMemoryAddress == nullptr)
+		{
+			GetLogger()->Critical("Failed to allocate memory for the video player patch\n");
+			MessageBox(NULL, L"Unexpected failure while patching the movie player", L"SubTitans", MB_ICONERROR);
+			return Exit();
+		}
+
 		memset(NewAllocatedMemoryAddress, 0, 0x11A * 4);
 
 		for (int i = 0; i < sizeof(StructurePatches) / sizeof(unsigned long); ++i)

@@ -22,7 +22,7 @@ uint32_t __stdcall KeyboardDevice::QueryInterface(GUID* guid, void** result)
 
 uint32_t __stdcall KeyboardDevice::AddRef()
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	ReferenceCount++;
 
@@ -31,7 +31,7 @@ uint32_t __stdcall KeyboardDevice::AddRef()
 
 uint32_t __stdcall KeyboardDevice::Release()
 {
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (--ReferenceCount == 0)
 		delete this;
@@ -39,26 +39,26 @@ uint32_t __stdcall KeyboardDevice::Release()
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall KeyboardDevice::GetCapabilities(DInput::Caps* caps) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::EnumObjects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::GetProperty(GUID& guid, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::SetProperty(GUID& guid, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetCapabilities(DInput::Caps* caps) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::EnumObjects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetProperty(GUID& guid, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::SetProperty(GUID& guid, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall KeyboardDevice::Acquire() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	return ResultCode::Ok;
 }
 
 uint32_t __stdcall KeyboardDevice::Unacquire() 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 	return ResultCode::Ok;
 }
 
 uint32_t __stdcall KeyboardDevice::GetDeviceState(uint32_t bufferSize, void* buffer)
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__); 
+	TRACELOG("%s\n", __FUNCTION__);
 
 	if (bufferSize != sizeof(Global::_KeyboardInformation))
 	{
@@ -74,11 +74,11 @@ uint32_t __stdcall KeyboardDevice::GetDeviceState(uint32_t bufferSize, void* buf
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall KeyboardDevice::GetDeviceData(uint32_t, void*, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetDeviceData(uint32_t, void*, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall KeyboardDevice::SetDataFormat(DInput::DataFormat* dataFormat)
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 	Initialized = false;
 
 	if (dataFormat->size != sizeof(DInput::DataFormat))
@@ -104,26 +104,26 @@ uint32_t __stdcall KeyboardDevice::SetDataFormat(DInput::DataFormat* dataFormat)
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall KeyboardDevice::SetEventNotification(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::SetEventNotification(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
 
 uint32_t __stdcall KeyboardDevice::SetCooperativeLevel(void*, uint32_t) 
 { 
-	GetLogger()->Trace("%s\n", __FUNCTION__);
+	TRACELOG("%s\n", __FUNCTION__);
 	return ResultCode::Ok;
 }
 
-uint32_t __stdcall KeyboardDevice::GetObjectInfo(void*, uint32_t, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::GetDeviceInfo(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::RunControlPanel(void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::Initialize(void*, int32_t, GUID&) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::CreateEffect(GUID&, void*, void**, void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::EnumEffects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::GetEffectInfo(void*, GUID&) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::GetForceFeedbackState(uint32_t*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::SendForceFeedbackCommand(uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::EnumCreatedEffectObjects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::Escape(void*) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::Poll() { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::SendDeviceData(void*, void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::EnumEffectsInFile(void*, void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
-uint32_t __stdcall KeyboardDevice::WriteEffectsToFile(void*, uint32_t, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetObjectInfo(void*, uint32_t, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetDeviceInfo(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::RunControlPanel(void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::Initialize(void*, int32_t, GUID&) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::CreateEffect(GUID&, void*, void**, void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::EnumEffects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetEffectInfo(void*, GUID&) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::GetForceFeedbackState(uint32_t*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::SendForceFeedbackCommand(uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::EnumCreatedEffectObjects(void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::Escape(void*) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::Poll() { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::SendDeviceData(void*, void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::EnumEffectsInFile(void*, void* callback, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }
+uint32_t __stdcall KeyboardDevice::WriteEffectsToFile(void*, uint32_t, void*, uint32_t) { GetLogger()->Error("%s\n", __FUNCTION__); UNIMPLEMENTED_EXIT(); return ResultCode::Ok; }

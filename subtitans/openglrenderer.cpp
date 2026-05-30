@@ -51,7 +51,10 @@ bool SetPixelFormat(HDC deviceContext)
 bool IsOpenGL3Compatible(HDC deviceContext)
 {
 	if (!SetPixelFormat(deviceContext))
+	{
+		GetLogger()->Error("%s %s\n", __FUNCTION__, "failed to set the pixel format");
 		return false;
+	}
 
 	HGLRC openGLContext = wglCreateContext(deviceContext);
 	if (!wglMakeCurrent(deviceContext, openGLContext))
@@ -79,9 +82,9 @@ bool IsOpenGL3Compatible(HDC deviceContext)
 
 bool OpenGLRenderer::Create()
 {
-	if (!Global::GameWindow)
+	if (!Global::RenderWindow)
 	{
-		GetLogger()->Error("%s %s\n", __FUNCTION__, "GameWindow hasn't been set");
+		GetLogger()->Error("%s %s\n", __FUNCTION__, "RenderWindow hasn't been set");
 		return false;
 	}
 
@@ -91,9 +94,9 @@ bool OpenGLRenderer::Create()
 		return false;
 	}
 
-	HDC deviceContext = GetDC(nullptr);
+	HDC deviceContext = GetDC(Global::RenderWindow);
 	bool isCompatible = IsOpenGL3Compatible(deviceContext);
-	ReleaseDC(nullptr, deviceContext);
+	ReleaseDC(Global::RenderWindow, deviceContext);
 
 	if (isCompatible)
 	{
@@ -125,112 +128,129 @@ void OpenGLRenderer::OnDestroyPrimarySurface()
 	Mutex.unlock();
 }
 
-const char* vertexShader = "#version 330 core\n	\
-layout (location = 0) in vec3 pos;				\
-layout (location = 1) in vec2 uv;				\
-												\
-out vec2 surfaceUv;								\
-												\
-void main()										\
-{												\
-	gl_Position.xyz = pos;						\
-	gl_Position.w = 1.0;						\
-												\
-	surfaceUv = uv;								\
-}												\
-";
+const char* vertexShader = R"(
+#version 330 core
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 uv;
 
-const char* fragmentShader = "#version 330 core\n		\
-uniform usampler2D surface;								\
-uniform sampler2D palette;								\
-														\
-in vec2 surfaceUv;										\
-out vec4 renderColor;									\
-														\
-void main()												\
-{														\
-	float idx = float(texture(surface, surfaceUv).r);	\
-	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;			\
-	renderColor = vec4(texture(palette, uv).rgb, 1.f);	\
-}														\
-";
+out vec2 surfaceUv;
 
-const char* fragmentShaderRetro = "#version 330 core\n															\
-uniform usampler2D surface;																						\
-uniform sampler2D palette;																						\
-																												\
-in vec2 surfaceUv;																								\
-out vec4 renderColor;																							\
-																												\
-vec3 getDestColor(float x, float y)																				\
-{																												\
-	float idx = texelFetch(surface, ivec2(x, y), 0).r;															\
-	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;																	\
-	return texture(palette, uv).rgb;																			\
-}																												\
-																												\
-vec3 getMostIntense(vec3 left, vec3 right)																		\
-{																												\
-	if(left.r + left.g + left.b >= right.r + right.g + right.b)													\
-	{																											\
-		return left;																							\
-	}																											\
-																												\
-	return right;																								\
-}																												\
-																												\
-void main()																										\
-{																												\
-	float idx = float(texture(surface, surfaceUv).r);															\
-	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;																	\
-	renderColor = vec4(texture(palette, uv).rgb, 1.f);															\
-																												\
-	vec2 size = textureSize(surface, 0);																		\
-	float x = surfaceUv.x * size.x;																				\
-	float y = surfaceUv.y * size.y;																				\
-																												\
-	/* Color blending based on intensity (+ shape) */															\
-	/* Top */																									\
-	float pos = y;																								\
-	if(pos - 1 >= 0) { pos -= 1;}																				\
-	vec3 topColor = getMostIntense(renderColor.rgb, getDestColor(x, pos));										\
-																												\
-	/* Left */																									\
-	pos = x;																									\
-	if(pos - 1 >= 0) { pos -= 1;}																				\
-	vec3 leftColor = getMostIntense(renderColor.rgb, getDestColor(pos, y));										\
-																												\
-	/* Bottom */																								\
-	pos = y;																									\
-	if(pos + 1 < size.y) { pos += 1; }																			\
-	vec3 bottomColor = getMostIntense(renderColor.rgb, getDestColor(x, pos));									\
-																												\
-	/* Right */																									\
-	pos = x;																									\
-	if(pos + 1 < size.x) { pos += 1; }																			\
-	vec3 rightColor = getMostIntense(renderColor.rgb, getDestColor(pos, y));									\
-																												\
-	renderColor.rgb = (renderColor.rgb * 2 + topColor + leftColor + bottomColor + rightColor) / 6.f;			\
-																												\
-	/* Scan line approximation */																				\
-	if(mod(floor(gl_FragCoord.y), 2) != 0)																		\
-	{																											\
-		float multiplier = 0.7f;																				\
-																												\
-		if(topColor.r + topColor.g + topColor.b > 2.f)															\
-		{																										\
-			multiplier += (topColor.r + topColor.g + topColor.b - 2.f) * 0.1f;									\
-		}																										\
-																												\
-		if(bottomColor.r + bottomColor.g + bottomColor.b > 2)													\
-		{																										\
-			multiplier += (bottomColor.r + bottomColor.g + bottomColor.b - 2.f) * 0.1f;							\
-		}																										\
-																												\
-		renderColor.rgb *= multiplier;																			\
-	}																											\
-}																												\
-";
+void main()
+{
+	gl_Position.xyz = pos;
+	gl_Position.w = 1.0;
+
+	surfaceUv = uv;
+}
+)";
+
+const char* fragmentShader8Bit = R"(
+#version 330 core
+uniform usampler2D surface;
+uniform sampler2D palette;
+
+in vec2 surfaceUv;
+out vec4 renderColor;
+
+void main()
+{
+	float idx = float(texture(surface, surfaceUv).r);
+	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;
+	renderColor = vec4(texture(palette, uv).rgb, 1.f);
+}
+)";
+
+const char* fragmentShader32Bit = R"(
+#version 330 core
+uniform sampler2D surface;
+
+in vec2 surfaceUv;
+out vec4 renderColor;
+
+void main()
+{
+	renderColor = vec4(texture(surface, surfaceUv).rgb, 1.f);
+}
+)";
+
+
+const char* fragmentShaderRetro8Bit = R"(
+#version 330 core
+uniform usampler2D surface;
+uniform sampler2D palette;
+
+in vec2 surfaceUv;
+out vec4 renderColor;
+
+vec3 getDestColor(float x, float y)
+{
+	float idx = texelFetch(surface, ivec2(x, y), 0).r;
+	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;
+	return texture(palette, uv).rgb;
+}
+
+vec3 getMostIntense(vec3 left, vec3 right)
+{
+	if(left.r + left.g + left.b >= right.r + right.g + right.b)
+	{
+		return left;
+	}
+
+	return right;
+}
+
+void main()
+{
+	float idx = float(texture(surface, surfaceUv).r);
+	vec2 uv = (vec2(idx, 0.f) + 0.5f) / 256.f;
+	renderColor = vec4(texture(palette, uv).rgb, 1.f);
+
+	vec2 size = textureSize(surface, 0);
+	float x = surfaceUv.x * size.x;
+	float y = surfaceUv.y * size.y;
+
+	/* Color blending based on intensity (+ shape) */
+	/* Top */
+	float pos = y;
+	if(pos - 1 >= 0) { pos -= 1;}
+	vec3 topColor = getMostIntense(renderColor.rgb, getDestColor(x, pos));
+
+	/* Left */
+	pos = x;
+	if(pos - 1 >= 0) { pos -= 1;}
+	vec3 leftColor = getMostIntense(renderColor.rgb, getDestColor(pos, y));
+
+	/* Bottom */
+	pos = y;
+	if(pos + 1 < size.y) { pos += 1; }
+	vec3 bottomColor = getMostIntense(renderColor.rgb, getDestColor(x, pos));
+
+	/* Right */
+	pos = x;
+	if(pos + 1 < size.x) { pos += 1; }
+	vec3 rightColor = getMostIntense(renderColor.rgb, getDestColor(pos, y));
+
+	renderColor.rgb = (renderColor.rgb * 2 + topColor + leftColor + bottomColor + rightColor) / 6.f;
+
+	/* Scan line approximation */
+	if(mod(floor(gl_FragCoord.y), 2) != 0)
+	{
+		float multiplier = 0.7f;
+
+		if(topColor.r + topColor.g + topColor.b > 2.f)
+		{
+			multiplier += (topColor.r + topColor.g + topColor.b - 2.f) * 0.1f;
+		}
+
+		if(bottomColor.r + bottomColor.g + bottomColor.b > 2)
+		{
+			multiplier += (bottomColor.r + bottomColor.g + bottomColor.b - 2.f) * 0.1f;
+		}
+
+		renderColor.rgb *= multiplier;
+	}
+}
+)";
 
 constexpr float _squareVertexData[]{
 	// POS
@@ -289,7 +309,7 @@ HGLRC CreateOpenGLContext(HDC deviceContext)
 }
 
 
-uint32_t CreateShader()
+uint32_t CreateShader(const char* fragmentShader)
 {
 	uint32_t vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShaderId, 1, &vertexShader, NULL);
@@ -308,7 +328,7 @@ uint32_t CreateShader()
 	}
 
 	uint32_t fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderId, 1, Global::RetroShader ? &fragmentShaderRetro : &fragmentShader, NULL);
+	glShaderSource(fragmentShaderId, 1, &fragmentShader, NULL);
 	glCompileShader(fragmentShaderId);
 	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &compileSucceeded);
 	if (!compileSucceeded)
@@ -364,35 +384,63 @@ void InitImGui()
 #endif
 }
 
+void OpenGLRenderer::RecalculateGLSurface()
+{
+	float* recalculatedSurface = new float[sizeof(_squareVertexData) / sizeof(float)];
+	memcpy(recalculatedSurface, _squareVertexData, sizeof(_squareVertexData));
+
+	if (RenderInformation.Padding != 0)
+	{
+		recalculatedSurface[0] += (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
+		recalculatedSurface[3] += (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
+		recalculatedSurface[6] -= (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
+		recalculatedSurface[9] -= (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(_squareVertexData), recalculatedSurface, GL_STATIC_DRAW);
+	delete[] recalculatedSurface;
+}
+
 void OpenGLRenderer::Run()
 {
-	HDC deviceContext = GetDC(nullptr);
+	HDC deviceContext = GetDC(Global::RenderWindow);
 	HGLRC openGLContext = CreateOpenGLContext(deviceContext);
 	if (openGLContext == nullptr)
 	{
 		GetLogger()->Error("%s %s\n", __FUNCTION__, "failed to create OpenGL context");
 
-		ReleaseDC(nullptr, deviceContext);
+		ReleaseDC(Global::RenderWindow, deviceContext);
 		return;
 	}
 
-	uint32_t shaderProgramId = CreateShader();
-	if (shaderProgramId == 0)
+	uint32_t shaderProgram8BitId = CreateShader(Global::RetroShader ? fragmentShaderRetro8Bit : fragmentShader8Bit);
+	if (shaderProgram8BitId == 0)
 	{
 		wglMakeCurrent(nullptr, nullptr);
 		wglDeleteContext(openGLContext);
-		ReleaseDC(nullptr, deviceContext);
+		ReleaseDC(Global::RenderWindow, deviceContext);
 		return;
 	}
 
-	glUseProgram(shaderProgramId);
+	uint32_t shaderProgram32BitId = CreateShader(fragmentShader32Bit);
+	if (shaderProgram32BitId == 0)
+	{
+		glDeleteProgram(shaderProgram8BitId);
+
+		wglMakeCurrent(nullptr, nullptr);
+		wglDeleteContext(openGLContext);
+		ReleaseDC(Global::RenderWindow, deviceContext);
+		return;
+	}
+
+	glUseProgram(shaderProgram8BitId);
+
+	glUniform1i(glGetUniformLocation(shaderProgram8BitId, "surface"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram8BitId, "palette"), 1);
 
 	/* Create images */
 	uint32_t surfaceTextureId = 0;
 	uint32_t paletteTextureId = 0;
-
-	glUniform1i(glGetUniformLocation(shaderProgramId, "surface"), 0);
-	glUniform1i(glGetUniformLocation(shaderProgramId, "palette"), 1);
 
 	glGenTextures(1, &surfaceTextureId);
 	glGenTextures(1, &paletteTextureId);
@@ -415,76 +463,63 @@ void OpenGLRenderer::Run()
 
 	InitImGui();
 
+	RenderInformation = Global::GetRenderInformation();
+	RecalculateGLSurface();
+
+	uint8_t* surfaceBuffer = nullptr;
+	uint32_t surfaceBufferSize = 0;
+	uint8_t* paletteBuffer = new uint8_t[1024];
+	memset(paletteBuffer, 0, 1024);
+
+	int32_t currentWidth = 0;
+	int32_t currentHeight = 0;
+	int32_t currentBitsPerPixel = 0;
+
 	Mutex.lock();
 	while (IsThreadRunning)
 	{
 		Mutex.unlock();
 
-		// Render if event has been dispatched OR if the rendering will drop under 25fps as some screens like the loading screen do not dispatch the event
-		WaitForSingleObject(Global::RenderEvent, 40);
-
-		Mutex.lock();
-		
-		// Not initialized
-		if (PrimarySurface == nullptr)
-			continue;
-		
-		// Stop rendering if the game isn't being focussed on
-		if (GetForegroundWindow() != Global::GameWindow)
-			continue;
-
-		// Prevent flickering caused by palette changes
-		if (PrimarySurface->PrimaryInvalid)
-			continue;
-
-		// Can't render without palette
-		if (!PrimarySurface->AttachedPalette)
-			continue; 
+		uint32_t drawTime = timeGetTime();
 
 		// Clear
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Set images
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		PrimarySurface->PrimaryDrawMutex.lock();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, PrimarySurface->Stride, PrimarySurface->Height, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, PrimarySurface->SurfaceBuffer);
-		PrimarySurface->PrimaryDrawMutex.unlock();
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, paletteTextureId);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		PrimarySurface->AttachedPalette->Mutex.lock();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, PrimarySurface->AttachedPalette->RawPalette);
-		PrimarySurface->AttachedPalette->Mutex.unlock();
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float)));
-
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-		if (RecalculateSurface)
+		if (surfaceBuffer)
 		{
-			float* recalculatedSurface = new float[sizeof(_squareVertexData)/sizeof(float)];
-			memcpy(recalculatedSurface, _squareVertexData, sizeof(_squareVertexData));
-		
-			if (RenderInformation.Padding != 0)
+			// Set images
+			if (currentBitsPerPixel == 8 && paletteBuffer)
 			{
-				recalculatedSurface[0] += (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
-				recalculatedSurface[3] += (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
-				recalculatedSurface[6] -= (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
-				recalculatedSurface[9] -= (float)RenderInformation.Padding * 2 / RenderInformation.MonitorWidth;
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, currentWidth, currentHeight, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, surfaceBuffer);
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, paletteTextureId);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, paletteBuffer);
+			}
+			else if (currentBitsPerPixel == 32)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, currentWidth, currentHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, surfaceBuffer);
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 
-			glBufferData(GL_ARRAY_BUFFER, sizeof(_squareVertexData), recalculatedSurface, GL_STATIC_DRAW);
-			delete[] recalculatedSurface;
-			RecalculateSurface = false;
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float)));
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 #ifdef _IMGUI_ENABLED
 		if (Global::ImGuiEnabled)
@@ -497,11 +532,93 @@ void OpenGLRenderer::Run()
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 #endif
-	
-		// Swap
+
 		SwapBuffers(deviceContext);
 
+		drawTime = timeGetTime() - drawTime;
+
+		// Render if event has been dispatched OR if the rendering will drop under 25fps as some screens like the loading screen do not dispatch the event
+		WaitForSingleObject(Global::RenderEvent, 40 - min(drawTime, 40));
+
+		Mutex.lock();
+		
+		// Not initialized
+		if (PrimarySurface == nullptr)
+			continue;
+		
+		// Stop rendering if the game isn't being focussed on
+		HWND foregroundWindow = GetForegroundWindow();
+		if (foregroundWindow != Global::GameWindow && foregroundWindow != Global::RenderWindow)
+			continue;
+
+		// Prevent flickering caused by palette changes
+		if (PrimarySurface->PrimaryInvalid)
+			continue;
+
+		// Can't render without palette
+		if (!PrimarySurface->AttachedPalette && PrimarySurface->BitsPerPixel == 8)
+			continue; 
+
+		if (!surfaceBuffer)
+		{
+			const uint32_t requestedBufferSize = PrimarySurface->Stride * PrimarySurface->Height;
+			surfaceBuffer = new uint8_t[requestedBufferSize];
+			surfaceBufferSize = requestedBufferSize;
+
+			RecalculateGLSurface();
+			RecalculateSurface = false;
+		}
+		else if (RecalculateSurface)
+		{
+			const uint32_t requestedBufferSize = PrimarySurface->Stride * PrimarySurface->Height;
+			if (requestedBufferSize > surfaceBufferSize)
+			{
+				delete[] surfaceBuffer;
+				surfaceBuffer = new uint8_t[requestedBufferSize];
+				surfaceBufferSize = requestedBufferSize;
+			}
+
+			RecalculateGLSurface();
+			RecalculateSurface = false;
+		}
+
+		PrimarySurface->PrimaryDrawMutex.lock();
+
+		if (PrimarySurface->BitsPerPixel == 8)
+		{
+			PrimarySurface->AttachedPalette->Mutex.lock();
+			memcpy(paletteBuffer, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
+			PrimarySurface->AttachedPalette->Mutex.unlock();
+		}
+
+		memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+
 		SetEvent(Global::VerticalBlankEvent);
+
+		PrimarySurface->PrimaryDrawMutex.unlock();
+
+		currentWidth = PrimarySurface->Width;
+		currentHeight = PrimarySurface->Height;
+
+		if (currentBitsPerPixel != PrimarySurface->BitsPerPixel)
+		{
+			// BBP switched
+			if (PrimarySurface->BitsPerPixel == 8)
+			{
+				glUseProgram(shaderProgram8BitId);
+
+				glUniform1i(glGetUniformLocation(shaderProgram8BitId, "surface"), 0);
+				glUniform1i(glGetUniformLocation(shaderProgram8BitId, "palette"), 1);
+			}
+			else if (PrimarySurface->BitsPerPixel == 32)
+			{
+				glUseProgram(shaderProgram32BitId);
+
+				glUniform1i(glGetUniformLocation(shaderProgram32BitId, "surface"), 0);
+			}
+		}
+
+		currentBitsPerPixel = PrimarySurface->BitsPerPixel;
 	}
 	Mutex.unlock();
 
@@ -512,14 +629,21 @@ void OpenGLRenderer::Run()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui::DestroyContext();
 #endif
+
+	if (paletteBuffer)
+		delete[] paletteBuffer;
+
+	if (surfaceBuffer)
+		delete[] surfaceBuffer;
 	
 	glDeleteBuffers(1, &vertexBufferId);
 	glDeleteVertexArrays(1, &vboId);
 
-	glDeleteProgram(shaderProgramId);
+	glDeleteProgram(shaderProgram32BitId);
+	glDeleteProgram(shaderProgram8BitId);
 	wglMakeCurrent(nullptr, nullptr);
 	wglDeleteContext(openGLContext);
-	ReleaseDC(nullptr, deviceContext);
+	ReleaseDC(Global::RenderWindow, deviceContext);
 
 	GetLogger()->Informational("%s %s\n", __FUNCTION__, "has been cleaned up");
 }
