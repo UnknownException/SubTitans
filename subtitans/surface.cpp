@@ -61,7 +61,7 @@ Surface::Surface(SurfaceDescription* description)
 { 
 	TRACELOG("%s (%i)\n", __FUNCTION__, Identifier);
 
-	PrimaryInvalid = false;
+	IsPrimaryValid = false;
 	MemoryDeviceContext = std::make_pair(nullptr, nullptr);
 
 	if (IsPrimary())
@@ -160,13 +160,19 @@ uint32_t FillColorBlt(Surface* surface, const RECT* destinationRect, const uint3
 
 	const int32_t destinationWidth = destinationRect->right - destinationRect->left;
 
+	if (surface->Width < destinationRect->right || surface->Height < destinationRect->bottom)
+	{
+		GetLogger()->Error("%s %s\n", __FUNCTION__, "attempted to fill outside of surface boundaries");
+		return ResultCode::Ok;
+	}
+
 	if (surface->IsPrimary())
 		surface->PrimaryDrawMutex.lock();
 
 	if (surface->BitsPerPixel == 8 || fillColor == 0)
 	{
 		// Quick copy (Only if full width and starts at the upper left corner)
-		if (destinationRect->top == 0 && destinationWidth == surface->Width)
+		if (destinationRect->top == 0 && destinationRect->left == 0 && destinationWidth == surface->Width)
 		{
 			uint32_t size = destinationRect->bottom * surface->Stride;
 			memset(surface->SurfaceBuffer, (uint8_t)fillColor, size);
@@ -195,9 +201,7 @@ uint32_t FillColorBlt(Surface* surface, const RECT* destinationRect, const uint3
 	if (surface->IsPrimary())
 	{
 		surface->PrimaryDrawMutex.unlock();
-
-		if (surface->PrimaryInvalid)
-			surface->PrimaryInvalid = false;
+		surface->IsPrimaryValid = true;
 	}
 
 	return ResultCode::Ok;
@@ -250,15 +254,15 @@ uint32_t __stdcall Surface::Blt(RECT* destinationRect, IDDrawSurface4* sourceDDS
 	}
 
 	if (Width < destinationRect->right || Height < destinationRect->bottom
-		|| (!colorFill && (sourceSurface->Width < sourceRect->right || Height < sourceRect->bottom)))
+		|| sourceSurface->Width < sourceRect->right || sourceSurface->Height < sourceRect->bottom)
 	{
 		GetLogger()->Error("%s %s (%i)\n", __FUNCTION__, "attempted to write outside of surface boundaries", Identifier);
 #if _DEBUG
 		GetLogger()->Informational("Src rect: l:%i t:%i r:%i b:%i (%ix%i@%ibpp)\nDst rect: l:%i t:%i r:%i b:%i (%ix%i@%ibpp)\n"
 			, sourceRect->left, sourceRect->top, sourceRect->right, sourceRect->bottom
-				, colorFill ? -1 : sourceSurface->Width
-				, colorFill ? -1 : sourceSurface->Height
-				, colorFill ? BitsPerPixel : sourceSurface->BitsPerPixel
+				, sourceSurface->Width
+				, sourceSurface->Height
+				, sourceSurface->BitsPerPixel
 			, destinationRect->left, destinationRect->top, destinationRect->right, destinationRect->bottom, Width, Height, BitsPerPixel
 		);
 #endif
@@ -309,9 +313,7 @@ uint32_t __stdcall Surface::Blt(RECT* destinationRect, IDDrawSurface4* sourceDDS
 	if (IsPrimary())
 	{
 		PrimaryDrawMutex.unlock();
-
-		if (PrimaryInvalid)
-			PrimaryInvalid = false;
+		IsPrimaryValid = true;
 	}
 
 	return ResultCode::Ok;
@@ -453,6 +455,8 @@ uint32_t __stdcall Surface::Lock(RECT* rect, DDraw::SurfaceDescription* desc, ui
 	TRACELOG("%s (%i)\n", __FUNCTION__, Identifier);
 
 	uint32_t result = GetSurfaceDesc(desc);
+	if (result != ResultCode::Ok)
+		return result;
 
 	if (IsPrimary())
 		PrimaryDrawMutex.lock();
@@ -491,8 +495,13 @@ uint32_t __stdcall Surface::SetClipper(IDDrawClipper* clipper)
 	if (AttachedClipper)
 		AttachedClipper->Release();
 
-	AttachedClipper = (Clipper*)clipper;
-	AttachedClipper->AddRef();
+	AttachedClipper = nullptr;
+
+	if (clipper != nullptr)
+	{
+		AttachedClipper = (Clipper*)clipper;
+		AttachedClipper->AddRef();
+	}
 
 	return ResultCode::Ok;
 }
@@ -510,13 +519,19 @@ uint32_t __stdcall Surface::SetPalette(IDDrawPalette* palette)
 	if (AttachedPalette)
 		AttachedPalette->Release();
 
-	AttachedPalette = (Palette*)palette;
-	AttachedPalette->AddRef();
+	AttachedPalette = nullptr;
+
+	if (palette != nullptr)
+	{
+		AttachedPalette = (Palette*)palette;
+		AttachedPalette->AddRef();
+	}
 
 	if (IsPrimary())
+	{
 		PrimaryDrawMutex.unlock();
-
-	PrimaryInvalid = true;
+		IsPrimaryValid = false;
+	}
 
 	return ResultCode::Ok; 
 }

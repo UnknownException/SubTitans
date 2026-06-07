@@ -55,12 +55,18 @@ uint32_t __stdcall Palette::GetEntries(uint32_t shouldBeZero, uint32_t index, ui
 		return ResultCode::InvalidArgument;
 	}
 
+	if (index > 255 || count > 256 - index)
+	{
+		GetLogger()->Error("%s %s index:%i count:%i\n", __FUNCTION__, "requested palette range is out of bounds", index, count);
+		return ResultCode::InvalidArgument;
+	}
+
 	Mutex.lock();
 
 	// BGR -> RGB
 	for (uint32_t i = 0; i < count; ++i)
 	{
-		const uint32_t pixel = RawPalette[i];
+		const uint32_t pixel = RawPalette[index + i];
 		result[i] = (pixel & 0xFF00FF00)
 			| ((pixel << 16) & 0x00FF0000)
 			| ((pixel >> 16) & 0x000000FF);
@@ -80,6 +86,12 @@ uint32_t __stdcall Palette::SetEntries(uint32_t shouldBeZero, uint32_t index, ui
 	if (shouldBeZero != 0)
 	{
 		GetLogger()->Error("%s %s %i != 0\n", __FUNCTION__, "shouldBeZero", shouldBeZero);
+		return ResultCode::InvalidArgument;
+	}
+
+	if (index > 255 || count > 256 - index)
+	{
+		GetLogger()->Error("%s %s index:%i count:%i\n", __FUNCTION__, "requested palette range is out of bounds", index, count);
 		return ResultCode::InvalidArgument;
 	}
 

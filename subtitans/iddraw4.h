@@ -30,7 +30,7 @@ namespace DDraw {
 		uint32_t colorKeyCaps;
 		uint32_t effectCaps;
 		uint32_t effectAlphaCaps;
-		uint32_t palleteCaps;
+		uint32_t paletteCaps;
 		uint32_t stereoVisionCaps;
 		uint32_t alphaBltConstantBitDepth;
 		uint32_t alphaBltPixelBitDepth;

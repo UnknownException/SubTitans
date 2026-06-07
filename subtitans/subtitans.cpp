@@ -49,7 +49,7 @@ static void StackTrace()
 
 	while (ebpRegister != nullptr)
 	{
-		if ((uint32_t)ebpRegister >= (uint32_t)stackHighLimit || (uint32_t)ebpRegister < (uint32_t)stackLowLimit)
+		if ((uint32_t)ebpRegister + 8 >= (uint32_t)stackHighLimit || (uint32_t)ebpRegister < (uint32_t)stackLowLimit)
 		{
 			GetLogger()->Informational("Address out of range!\n");
 			break;
@@ -76,21 +76,30 @@ static void StackTrace()
 				&& _splitpath_s(modulePath, nullptr, 0, nullptr, 0, name, _MAX_FNAME, ext, _MAX_EXT) == 0)
 			{
 				modulePaths.push_back(std::make_pair(std::string(name) + ext, modulePath));
-				GetLogger()->Informational("[%i] Absolute 0x%04X Relative 0x%04X (%s%s)\n", depth++, returnAddress, returnAddress - (uint32_t)hMod, name, ext);
+				GetLogger()->Informational("[%i] Absolute 0x%08X Relative 0x%08X (%s%s)\n", depth++, returnAddress, returnAddress - (uint32_t)hMod, name, ext);
 			}
 			else
 			{
-				GetLogger()->Informational("[%i] Absolute 0x%04X Relative 0x%04X\n", depth++, returnAddress, returnAddress - (uint32_t)hMod);
+				GetLogger()->Informational("[%i] Absolute 0x%08X Relative 0x%08X\n", depth++, returnAddress, returnAddress - (uint32_t)hMod);
 			}
 		}
 		else
 		{
-			GetLogger()->Informational("[%i] Address 0x%04X\n", depth++, returnAddress);
+			GetLogger()->Informational("[%i] Address 0x%08X\n", depth++, returnAddress);
 		}
 
-		ebpRegister = (uint32_t*)(*ebpRegister);
-		if (ebpRegister == nullptr)
+		uint32_t* nextEbp = (uint32_t*)(*ebpRegister);
+		if ((uint32_t)nextEbp <= (uint32_t)ebpRegister)
+		{
+			if (nextEbp == nullptr)
+				GetLogger()->Informational("Reached base of stack\n");
+			else
+				GetLogger()->Informational("Possible stack corruption\n");
+
 			break;
+	}
+
+		ebpRegister = nextEbp;
 	}
 
 	GetLogger()->Informational("End of stack trace\n");
@@ -98,7 +107,7 @@ static void StackTrace()
 	for (const auto& modulePath : modulePaths)
 	{
 		uint32_t checksum = File::CalculateChecksumA(modulePath.second.c_str());
-		GetLogger()->Informational("%s CRC32 %04X\n", modulePath.first.c_str(), checksum);
+		GetLogger()->Informational("%s CRC32 %08X\n", modulePath.first.c_str(), checksum);
 	}
 }
 
