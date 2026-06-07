@@ -79,9 +79,9 @@ public:
 	uint8_t* SurfaceBuffer;
 
 	std::mutex PrimaryDrawMutex;
-	std::atomic_bool PrimaryInvalid;
+	std::atomic_bool IsPrimaryValid;
 
 	Palette* AttachedPalette;
 
-	bool IsPrimary() const { return (Description.flags & DDraw::SurfaceDescriptionFlag::Caps) && (Description.caps.caps[0] & DDraw::SurfaceCapsFlag::Primary); }
+	const bool IsPrimary() const { return (Description.flags & DDraw::SurfaceDescriptionFlag::Caps) && (Description.caps.caps[0] & DDraw::SurfaceCapsFlag::Primary); }
 };

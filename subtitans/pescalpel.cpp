@@ -65,7 +65,7 @@ static bool UpdateChecksum(const wchar_t* applicationPath, BYTE* base)
         return false;
     }
     
-    GetLogger()->Debug("Header sum: %i, Check sum: %i\n", &headerSum, &checkSum);
+    GetLogger()->Debug("Header sum: 0x%08X, Check sum: 0x%08X\n", headerSum, checkSum);
 
     IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)base;
     if (dos->e_magic != IMAGE_DOS_SIGNATURE)
@@ -81,7 +81,7 @@ static bool UpdateChecksum(const wchar_t* applicationPath, BYTE* base)
         return false;
     }
 
-    GetLogger()->Debug("PE header check sum: %i\n", nt->OptionalHeader.CheckSum);
+    GetLogger()->Debug("PE header check sum: 0x%08X\n", nt->OptionalHeader.CheckSum);
 
     // Original PE contains a value of 0, GOG seems to contain an incorrect value?
     // For now we'll just skip updating the check sum...

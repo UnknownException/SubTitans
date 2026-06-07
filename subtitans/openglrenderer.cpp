@@ -322,7 +322,7 @@ uint32_t CreateShader(const char* fragmentShader)
 
 		char errorBuffer[1024 - 16];
 		glGetShaderInfoLog(vertexShaderId, sizeof(errorBuffer), NULL, errorBuffer);
-		GetLogger()->Error(errorBuffer);
+		GetLogger()->Error("%s", errorBuffer);
 
 		return 0;
 	}
@@ -337,7 +337,7 @@ uint32_t CreateShader(const char* fragmentShader)
 
 		char errorBuffer[1024 - 16];
 		glGetShaderInfoLog(fragmentShaderId, sizeof(errorBuffer), NULL, errorBuffer);
-		GetLogger()->Error(errorBuffer);
+		GetLogger()->Error("%s", errorBuffer);
 
 		return 0;
 	}
@@ -353,7 +353,7 @@ uint32_t CreateShader(const char* fragmentShader)
 
 		char errorBuffer[1024 - 16];
 		glGetProgramInfoLog(shaderProgramId, sizeof(errorBuffer), NULL, errorBuffer);
-		GetLogger()->Error(errorBuffer);
+		GetLogger()->Error("%s", errorBuffer);
 
 		return 0;
 	}
@@ -445,6 +445,17 @@ void OpenGLRenderer::Run()
 	glGenTextures(1, &surfaceTextureId);
 	glGenTextures(1, &paletteTextureId);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, paletteTextureId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+
 	glViewport(0, 0, Global::MonitorWidth, Global::MonitorHeight);
 
 	uint32_t vboId = 0;
@@ -458,6 +469,9 @@ void OpenGLRenderer::Run()
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float)));
 
 	GetLogger()->Informational("%s %s\n", __FUNCTION__, "is running");
 
@@ -474,6 +488,7 @@ void OpenGLRenderer::Run()
 	int32_t currentWidth = 0;
 	int32_t currentHeight = 0;
 	int32_t currentBitsPerPixel = 0;
+	bool refreshGLTexture = false;
 
 	Mutex.lock();
 	while (IsThreadRunning)
@@ -483,42 +498,39 @@ void OpenGLRenderer::Run()
 		uint32_t drawTime = timeGetTime();
 
 		// Clear
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		if (surfaceBuffer)
 		{
-			// Set images
+			// Upload the surface. Re-allocate only when the resolution or bit depth changed
 			if (currentBitsPerPixel == 8 && paletteBuffer)
 			{
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, currentWidth, currentHeight, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, surfaceBuffer);
+				if (refreshGLTexture)
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, currentWidth, currentHeight, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, surfaceBuffer);
+				else
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, currentWidth, currentHeight, GL_RED_INTEGER, GL_UNSIGNED_BYTE, surfaceBuffer);
 
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, paletteTextureId);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_BGRA, GL_UNSIGNED_BYTE, paletteBuffer);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_BGRA, GL_UNSIGNED_BYTE, paletteBuffer);
 			}
 			else if (currentBitsPerPixel == 32)
 			{
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, currentWidth, currentHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, surfaceBuffer);
+				if (refreshGLTexture)
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, currentWidth, currentHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, surfaceBuffer);
+				else
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, currentWidth, currentHeight, GL_BGRA, GL_UNSIGNED_BYTE, surfaceBuffer);
 
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
 
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float)));
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			refreshGLTexture = false;
 		}
 
 #ifdef _IMGUI_ENABLED
@@ -552,7 +564,7 @@ void OpenGLRenderer::Run()
 			continue;
 
 		// Prevent flickering caused by palette changes
-		if (PrimarySurface->PrimaryInvalid)
+		if (!PrimarySurface->IsPrimaryValid)
 			continue;
 
 		// Can't render without palette
@@ -567,6 +579,7 @@ void OpenGLRenderer::Run()
 
 			RecalculateGLSurface();
 			RecalculateSurface = false;
+			refreshGLTexture = true;
 		}
 		else if (RecalculateSurface)
 		{
@@ -580,6 +593,7 @@ void OpenGLRenderer::Run()
 
 			RecalculateGLSurface();
 			RecalculateSurface = false;
+			refreshGLTexture = true;
 		}
 
 		PrimarySurface->PrimaryDrawMutex.lock();
@@ -597,9 +611,6 @@ void OpenGLRenderer::Run()
 
 		PrimarySurface->PrimaryDrawMutex.unlock();
 
-		currentWidth = PrimarySurface->Width;
-		currentHeight = PrimarySurface->Height;
-
 		if (currentBitsPerPixel != PrimarySurface->BitsPerPixel)
 		{
 			// BBP switched
@@ -616,8 +627,12 @@ void OpenGLRenderer::Run()
 
 				glUniform1i(glGetUniformLocation(shaderProgram32BitId, "surface"), 0);
 			}
+
+			refreshGLTexture = true;
 		}
 
+		currentWidth = PrimarySurface->Width;
+		currentHeight = PrimarySurface->Height;
 		currentBitsPerPixel = PrimarySurface->BitsPerPixel;
 	}
 	Mutex.unlock();

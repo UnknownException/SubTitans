@@ -107,7 +107,7 @@ void SoftwareRenderer::Run()
 			continue;
 
 		// Prevent flickering caused by palette changes
-		if (PrimarySurface->PrimaryInvalid)
+		if (!PrimarySurface->IsPrimaryValid)
 			continue;
 
 		if (PrimarySurface->BitsPerPixel == 8)

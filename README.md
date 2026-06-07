@@ -32,7 +32,7 @@
 
 ## Question and Answers
 ### How to update Submarine Titans to version 1.1?
-> Window: https://steamcommunity.com/sharedfiles/filedetails/?id=2129291420 \
+> Windows: https://steamcommunity.com/sharedfiles/filedetails/?id=2129291420 \
 > Linux: See [PROTON-v1_0-v_1_1.md](PROTON-v1_0-v1_1.md)
 
 ### Why am I getting MSVCP140.dll errors?
@@ -59,7 +59,7 @@
 
 ### How do I use the mission skip cheat?
 > Load the mission you want to skip and write 'orbiton' without quotes in the chatbox. \
-> Exit to the menu and select a random campaign to start the next mission. \
+> Exit to the menu and select a random campaign to start the next mission.
 
 ### How do I uninstall the patch?
 > Deleting SubTitans.dll will disable the in-game patches.
