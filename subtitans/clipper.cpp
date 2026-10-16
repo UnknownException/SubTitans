@@ -6,7 +6,7 @@ using namespace DDraw;
 Clipper::Clipper()
 {
 	TRACELOG("%s\n", __FUNCTION__);
-	referenceCount = 0;
+	ReferenceCount = 0;
 }
 
 Clipper::~Clipper() { TRACELOG("%s\n", __FUNCTION__); }
@@ -25,16 +25,16 @@ uint32_t __stdcall Clipper::AddRef()
 { 
 	TRACELOG("%s\n", __FUNCTION__);
 	
-	referenceCount++;
+	ReferenceCount++;
 
 	return ResultCode::Ok; 
 }
 
 uint32_t __stdcall Clipper::Release() 
 { 
-	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, referenceCount);
+	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, ReferenceCount);
 
-	if (--referenceCount == 0)
+	if (--ReferenceCount == 0)
 		delete this;
 
 	return ResultCode::Ok;

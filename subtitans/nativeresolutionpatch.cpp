@@ -74,6 +74,12 @@ namespace NativeResolution{
 	}
 
 	namespace RedesignFrame{
+		// The game frames are fixed size images for the resolution you've selected (800x600, 1024x768 or 1280x1024).
+		// With no frames available for other resolutions I had to come up with a solution.
+		// As I do not want to redesign a new frame for every possible resolution and have no intent to modify and redistribute copyrighted content, I was quite constrained.
+		// The solution I came up with was to cut up the 1280x1024 frame at run-time into segments: corners, static elements and repeatable blocks and generate a new image based on it.
+		// By drawing the corners and static elements once, I could use the repeatable block to fill in the gaps between.
+
 		// Detour variables
 		constexpr unsigned long DetourSize = 18;
 		static unsigned long JmpFromAddress = 0;
@@ -291,6 +297,11 @@ namespace NativeResolution{
 	}
 
 	namespace RepositionBriefing {
+		// This briefing window sticks to the side of the screen, with a full width main control panel it'll neatly hide under it.
+		// Because of the open space at the sides of the main control panel introduced by this patch, the briefing window will stay on-screen
+		// after switching into a hidden state.
+		// By subtracting ControlPanelMarginLeft from its current X-position it'll be sticking above/under the main control panel.
+		
 		// Detour variables
 		constexpr unsigned long DetourSize = 6;
 		static unsigned long JmpFromAddress = 0;

@@ -40,7 +40,7 @@ public:
 
 	// Custom
 private:
-	uint32_t referenceCount;
+	uint32_t ReferenceCount;
 };
 
 uint32_t __stdcall DirectDrawCreate(void*, DDraw::IDDraw4** result, void*);

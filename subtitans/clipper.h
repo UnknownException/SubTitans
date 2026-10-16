@@ -21,5 +21,5 @@ public:
 
 	// Custom
 private:
-	uint32_t referenceCount;
+	uint32_t ReferenceCount;
 };

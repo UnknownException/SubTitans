@@ -97,7 +97,7 @@ static void StackTrace()
 				GetLogger()->Informational("Possible stack corruption\n");
 
 			break;
-	}
+		}
 
 		ebpRegister = nextEbp;
 	}

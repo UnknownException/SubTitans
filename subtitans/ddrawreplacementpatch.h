@@ -14,6 +14,7 @@ public:
 	unsigned long DInputDetourAddress;
 	unsigned long WindowRegisterClassDetourAddress;
 	unsigned long WindowCreateDetourAddress;
+	unsigned long WindowResizeDetourAddress;
 	unsigned long VideoScalingAddress;
 	/// <summary>
 	/// Optional; log which video is being prepared to play

@@ -57,6 +57,7 @@ void SteamPatchedPatcher::Configure()
 		ddrawReplacementPatch->DInputDetourAddress = RELOC_ADDR(0x0071B2BE);
 		ddrawReplacementPatch->WindowRegisterClassDetourAddress = RELOC_ADDR(0x0056AEC7);
 		ddrawReplacementPatch->WindowCreateDetourAddress = RELOC_ADDR(0x0056AF13);
+		ddrawReplacementPatch->WindowResizeDetourAddress = RELOC_ADDR(0x0056D912);
 		ddrawReplacementPatch->VideoFormatCheckDetourAddress = RELOC_ADDR(0x006C2A00);
 		ddrawReplacementPatch->VideoScalingAddress = RELOC_ADDR(0x006C3D97);
 		ddrawReplacementPatch->DInputAbsolutePositioningDetourAddress = RELOC_ADDR(0x0071B6CC);

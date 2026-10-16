@@ -190,6 +190,10 @@ namespace WindowCreateDetour {
 
 	static void CreateRenderWindow()
 	{		
+		// Use a second non interactable window as overlay for rendering.
+		// The GameWindow will be accessed by the game's main thread, it's unsafe to reuse that
+		// for our custom renderer.
+
 		WNDCLASS wc = {};
 		wc.lpfnWndProc = OverlayWndProc;
 		wc.hInstance = GetModuleHandle(NULL);
@@ -257,6 +261,26 @@ namespace WindowCreateDetour {
 		__asm call [CreateRenderer];
 		__asm pop eax; // Restore
 
+		__asm jmp [JmpBackAddress];
+	}
+}
+
+namespace SkipWindowResizeDetour {
+	// Proton/KDE specific fix.
+	// Prevents the unneeded resizes of the window, as Device::SetDisplayMode overrides it anyway.
+	// The original MoveWindow call in combination with the SetWindowPos call in device.cpp results in
+	// the taskbar staying on top of the game.
+	constexpr unsigned long DetourSize = 21;
+	static unsigned long JmpFromAddress = 0;
+	static unsigned long JmpBackAddress = 0;
+
+	// The pushes and the call to MoveWindow are removed.
+	// As a side effect some other instructions are removed too, so that's why they're restored down here:
+	static __declspec(naked) void Implementation()
+	{
+		__asm sbb esi, esi;
+		__asm inc esi;
+		__asm mov dword ptr ss : [ebp - 0x08], esi;
 		__asm jmp [JmpBackAddress];
 	}
 }
@@ -370,6 +394,7 @@ DDrawReplacementPatch::DDrawReplacementPatch()
 	DInputDetourAddress = 0;
 	WindowRegisterClassDetourAddress = 0;
 	WindowCreateDetourAddress = 0;
+	WindowResizeDetourAddress = 0;
 	VideoFormatCheckDetourAddress = 0;
 	VideoScalingAddress = 0;
 	DInputAbsolutePositioningDetourAddress = 0;
@@ -525,6 +550,14 @@ bool DDrawReplacementPatch::Apply()
 	WindowCreateDetour::ForceSoftwareRendering = ForceSoftwareRendering;
 	if (!Detour::Create(WindowCreateDetour::JmpFromAddress, WindowCreateDetour::DetourSize, (unsigned long)WindowCreateDetour::Implementation))
 		return false;
+
+	if (WindowResizeDetourAddress != 0)
+	{
+		SkipWindowResizeDetour::JmpFromAddress = WindowResizeDetourAddress;
+		SkipWindowResizeDetour::JmpBackAddress = SkipWindowResizeDetour::JmpFromAddress + SkipWindowResizeDetour::DetourSize;
+		if (!Detour::Create(SkipWindowResizeDetour::JmpFromAddress, SkipWindowResizeDetour::DetourSize, (unsigned long)SkipWindowResizeDetour::Implementation))
+			return false;
+	}
 
 	if (VideoFormatCheckDetourAddress != 0)
 	{

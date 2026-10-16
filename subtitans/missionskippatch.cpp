@@ -2,8 +2,11 @@
 #include "missionskippatch.h"
 
 /*
-	Issue: Some missions don't always trigger the mission end event
-	Solution: Add a cheat for mission skipping
+	Some missions don't always trigger the mission end event, which causes you to get stuck.
+	The solution I came up with is to add a cheat for mission skipping.
+	It is a little bit unintuitive, as this was easier to implement at the time.
+	To correctly execute the cheat you'll have to write 'orbiton' in the game chat, exit to the main menu and start a new campaign to
+	start the next mission.
 */
 
 namespace MissionSkip {

@@ -11,7 +11,7 @@ Device::Device()
 {
 	TRACELOG("%s\n", __FUNCTION__); 
 
-	referenceCount = 0;
+	ReferenceCount = 0;
 }
 Device::~Device() 
 { 
@@ -45,16 +45,16 @@ uint32_t __stdcall Device::AddRef()
 {
 	TRACELOG("%s\n", __FUNCTION__);
 
-	referenceCount++;
+	ReferenceCount++;
 
 	return ResultCode::Ok; 
 }
 
 uint32_t __stdcall Device::Release() 
 { 
-	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, referenceCount);
+	TRACELOG("%s (Remaining references %i)\n", __FUNCTION__, ReferenceCount);
 
-	if(--referenceCount == 0)
+	if(--ReferenceCount == 0)
 		delete this;
 
 	return ResultCode::Ok;
@@ -234,15 +234,11 @@ uint32_t __stdcall Device::SetDisplayMode(uint32_t width, uint32_t height, uint3
 	Global::InternalHeight = height;
 	Global::BitsPerPixel = bitsPerPixel;
 
-	RECT rect;
-	if (GetWindowRect(Global::GameWindow, &rect))
-	{
-		int32_t currWidth = rect.right - rect.left;
-		int32_t currHeight = rect.bottom - rect.top;
-
-		if (currWidth != Global::MonitorWidth || currHeight != Global::MonitorHeight)
-			SetWindowPos(Global::GameWindow, nullptr, 0, 0, Global::MonitorWidth, Global::MonitorHeight, SWP_NOMOVE);
-	}
+	// Gymnastics to keep firing window events. Only 'activate' when not in the foreground, to prevent flashes when running under Proton.
+	SetWindowPos(Global::GameWindow, nullptr, 0, 0, Global::MonitorWidth, Global::MonitorHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	HWND foregroundWindow = GetForegroundWindow();
+	if (foregroundWindow != Global::GameWindow && foregroundWindow != Global::RenderWindow)
+		SetForegroundWindow(Global::GameWindow);
 
 	// RenderWindow must act as a click through overlay over the game window.
 	ShowWindow(Global::RenderWindow, SW_SHOWNOACTIVATE);
