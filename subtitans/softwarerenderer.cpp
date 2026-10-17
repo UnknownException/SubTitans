@@ -149,12 +149,22 @@ void SoftwareRenderer::Run()
 
 		if (PrimarySurface->BitsPerPixel == 8)
 		{
-			PrimarySurface->AttachedPalette->Mutex.lock();
-			memcpy(primaryBitmapInfo->bmiColors, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
-			PrimarySurface->AttachedPalette->Mutex.unlock();
+			if (PrimarySurface->AttachedPalette)
+			{
+				PrimarySurface->AttachedPalette->Mutex.lock();
+				memcpy(primaryBitmapInfo->bmiColors, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
+				PrimarySurface->AttachedPalette->Mutex.unlock();
+			}
+			else
+			{
+				memset(primaryBitmapInfo->bmiColors, 0, sizeof(RGBQUAD) * 256);
+			}
 		}
 
-		memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+		if (PrimarySurface->IsPrimaryValid)
+			memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+		else
+			memset(surfaceBuffer, 0, PrimarySurface->Stride * PrimarySurface->Height);
 
 		SetEvent(Global::VerticalBlankEvent);
 

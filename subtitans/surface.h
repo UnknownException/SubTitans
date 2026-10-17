@@ -16,7 +16,7 @@ public:
 	// Direct Draw
 	virtual uint32_t __stdcall AddAttachedSurface(void*) override;
 	virtual uint32_t __stdcall AddOverlayDirtyRect(void*) override;
-	virtual uint32_t __stdcall Blt(RECT* sourceRect, IDDrawSurface4* sourceSurface, RECT* destinationRect, uint32_t flags, void* unknown2) override;
+	virtual uint32_t __stdcall Blt(RECT* destinationRect, IDDrawSurface4* sourceSurface, RECT* sourceRect, uint32_t flags, void* bltFx) override;
 	virtual uint32_t __stdcall BltBatch(void*, uint32_t, uint32_t) override;
 	virtual uint32_t __stdcall BltFast(uint32_t, uint32_t, void*, void*, uint32_t) override;
 	virtual uint32_t __stdcall DeleteAttachedSurface(uint32_t, void*) override;

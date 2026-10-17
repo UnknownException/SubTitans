@@ -138,6 +138,10 @@ namespace WindowRegisterClassDetour {
 			case WM_ACTIVATEAPP:
 			{
 				memset(&Global::KeyboardInformation, 0, sizeof(Global::_KeyboardInformation));
+				Global::MouseInformation.lPressed = Global::KeyReleasedFlag;
+				Global::MouseInformation.rPressed = Global::KeyReleasedFlag;
+				Global::MouseInformation.mPressed = Global::KeyReleasedFlag;
+				Global::MouseInformation.xPressed = Global::KeyReleasedFlag;
 				
 				if (wParam == 1)
 				{
@@ -345,11 +349,9 @@ namespace VideoFormatCheckDetour {
 		// Copy of the prologue
 		__asm push ebp;
 		__asm mov ebp, esp;
+		__asm push ecx;
 		__asm push esi;
 		__asm push edi;
-
-		// Restore throw away register
-		__asm push ecx;
 
 		// Custom
 		__asm mov eax, dword ptr ss : [ebp + 0x08];

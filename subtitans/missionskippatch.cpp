@@ -95,7 +95,8 @@ namespace MissionSkip {
 			__asm push 0x07;
 			__asm push offset [MissionSkipCheatString];
 			__asm push ebx;
-			__asm call [CheatValidationFunctionAddress];
+			__asm call [CheatValidationFunctionAddress]; // plain string compare
+			__asm add esp, 0x0C;
 			__asm test eax, eax;
 			__asm jnz missionSkipCheatEpilogue;
 

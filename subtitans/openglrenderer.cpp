@@ -486,8 +486,7 @@ void OpenGLRenderer::Run()
 
 	uint8_t* surfaceBuffer = nullptr;
 	uint32_t surfaceBufferSize = 0;
-	uint8_t* paletteBuffer = new uint8_t[1024];
-	memset(paletteBuffer, 0, 1024);
+	uint8_t paletteBuffer[1024] = {};
 
 	int32_t currentWidth = 0;
 	int32_t currentHeight = 0;
@@ -507,7 +506,7 @@ void OpenGLRenderer::Run()
 		if (surfaceBuffer)
 		{
 			// Upload the surface. Re-allocate only when the resolution or bit depth changed
-			if (currentBitsPerPixel == 8 && paletteBuffer)
+			if (currentBitsPerPixel == 8)
 			{
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, surfaceTextureId);
@@ -604,12 +603,22 @@ void OpenGLRenderer::Run()
 
 		if (PrimarySurface->BitsPerPixel == 8)
 		{
-			PrimarySurface->AttachedPalette->Mutex.lock();
-			memcpy(paletteBuffer, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
-			PrimarySurface->AttachedPalette->Mutex.unlock();
+			if (PrimarySurface->AttachedPalette)
+			{
+				PrimarySurface->AttachedPalette->Mutex.lock();
+				memcpy(paletteBuffer, PrimarySurface->AttachedPalette->RawPalette, sizeof(PrimarySurface->AttachedPalette->RawPalette));
+				PrimarySurface->AttachedPalette->Mutex.unlock();
+			}
+			else
+			{
+				memset(paletteBuffer, 0, sizeof(paletteBuffer));
+			}
 		}
 
-		memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+		if (PrimarySurface->IsPrimaryValid)
+			memcpy(surfaceBuffer, PrimarySurface->SurfaceBuffer, PrimarySurface->Stride * PrimarySurface->Height);
+		else
+			memset(surfaceBuffer, 0, PrimarySurface->Stride * PrimarySurface->Height);
 
 		SetEvent(Global::VerticalBlankEvent);
 
@@ -648,9 +657,6 @@ void OpenGLRenderer::Run()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui::DestroyContext();
 #endif
-
-	if (paletteBuffer)
-		delete[] paletteBuffer;
 
 	if (surfaceBuffer)
 		delete[] surfaceBuffer;
