@@ -25,6 +25,10 @@ OpenGLRenderer::~OpenGLRenderer()
 
 bool SetPixelFormat(HDC deviceContext)
 {
+	// Only allowed to be called once
+	if (GetPixelFormat(deviceContext) != 0)
+		return true;
+
 	PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
 	memset(&pixelFormatDescriptor, 0, sizeof(PIXELFORMATDESCRIPTOR));
 

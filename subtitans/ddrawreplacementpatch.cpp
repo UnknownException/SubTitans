@@ -49,8 +49,12 @@ namespace WindowRegisterClassDetour {
 			case WM_WINDOWPOSCHANGING:
 			{
 				TRACELOG("%s %s\n", __FUNCTION__, "WM_WINDOWPOSCHANGING");
-				RECT rect { 0, 0 , Global::InternalWidth, Global::InternalHeight };
-				ClipCursor(&rect);
+
+				if (GetForegroundWindow() == hWnd)
+				{
+					RECT rect { 0, 0 , Global::InternalWidth, Global::InternalHeight };
+					ClipCursor(&rect);
+				}
 			} break;
 			case WM_MOUSEMOVE:
 				Global::MouseInformation.x = (int16_t)(lParam & 0xFFFF);
@@ -188,13 +192,14 @@ namespace WindowCreateDetour {
 		}
 	}
 
-	static void CreateRenderWindow()
+	static void CreateRenderWindow(bool useOpenGL)
 	{		
 		// Use a second non interactable window as overlay for rendering.
 		// The GameWindow will be accessed by the game's main thread, it's unsafe to reuse that
 		// for our custom renderer.
 
 		WNDCLASS wc = {};
+		if (useOpenGL) wc.style = CS_OWNDC; // The OpenGL render thread keeps the window's DC for its whole lifetime
 		wc.lpfnWndProc = OverlayWndProc;
 		wc.hInstance = GetModuleHandle(NULL);
 		wc.lpszClassName = L"SubTitansOverlay";
@@ -221,10 +226,11 @@ namespace WindowCreateDetour {
 
 	static void __stdcall CreateRenderer()
 	{
-		CreateRenderWindow();
+		bool useOpenGL = !ForceSoftwareRendering;
+		CreateRenderWindow(useOpenGL);
 
 		IRenderer* renderer = nullptr;
-		if (!ForceSoftwareRendering)
+		if (useOpenGL)
 		{
 			GetLogger()->Informational("Using the OpenGL renderer\n");
 			renderer = new OpenGLRenderer();
